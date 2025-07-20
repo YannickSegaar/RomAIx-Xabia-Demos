@@ -7388,7 +7388,7 @@ export const PropertyCalculatorExtension4 = {
   render: ({ trace, element }) => {
     // --- Configuration (Styled to match Xàbia Properties website) ---
     const {
-      apiKey = 'AIzaSyA5y-Tq-IEhgS1NQxY7HgnXe4pPA4tPuH4', // Load API key from config file
+      apiKey = config.googleMaps.apiKey, // Load API key from config file
       workflowTitle = 'Xàbia Property Finder',
       height = '700',
       primaryColor = '#3a5f8a',      // Professional Blue from screenshot
@@ -7759,5 +7759,824 @@ export const PropertyCalculatorExtension4 = {
     loadGoogleMapsScript();
 
     return function cleanup() {};
+  }
+};
+
+
+//YRS: Property Calculator - VERSION 5
+
+export const PropertyCalculatorExtension5 = {
+  name: 'PropertyCalculator5',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_propertyCalculator5' || trace.payload?.name === 'ext_propertyCalculator5',
+  render: ({ trace, element }) => {
+    // --- Configuration (Styled to match Xàbia Properties website) ---
+    const {
+      apiKey = config.googleMaps.apiKey, // Load API key from config file
+      workflowTitle = 'Xàbia Property Finder',
+      height = '700',
+      primaryColor = '#3a5f8a',      // Professional Blue from screenshot
+      secondaryColor = '#2c5282',    // Darker Blue for hover
+      accentColor = '#3a5f8a',       // Using primary blue for buttons
+      backgroundColor = '#ffffff',
+      formBackgroundColor = '#f8f9fa',
+      textColor = '#333333',
+      borderRadius = '8px',
+      fontFamily = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      // Default location bias for Xàbia/Valencia area
+      defaultLat = 38.79,
+      defaultLng = 0.23,
+      defaultRadius = 30000.0
+    } = trace.payload || {};
+
+    // --- Sample Property Data (for demo purposes) ---
+    const propertiesData = [
+        { id: 'finca-montgo', name: 'Traditional Finca near Montgó', price: 850000, image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2e0?q=80&w=870&auto=format&fit=crop', description: 'Tranquility and space with a private plot and pool.'},
+        { id: 'atico-arenal', name: 'Modern Penthouse in El Arenal', price: 680000, image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=870&auto=format&fit=crop', description: 'Spacious and stylish, steps from the beach and restaurants.'},
+        { id: 'apto-puerto', name: 'Apartment in The Port', price: 450000, image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=870&auto=format&fit=crop', description: 'Perfect for enjoying the vibrant port atmosphere and amenities.'},
+        { id: 'villa-grana', name: 'Luxury Villa in Granadella', price: 1850000, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=870&auto=format&fit=crop', description: 'Front-line luxury with stunning sea views.'}
+    ];
+
+    // --- State Management ---
+    const workflowData = {
+      currentStep: 'location',
+      userLocation: { address: '', lat: 0, lng: 0, placeId: '' },
+      budgetInputs: { income: '', deposit: '', term: '25' },
+      calculatedBudget: 0,
+      matchingProperties: [],
+      selectedProperty: null,
+      contactInfo: { name: '', email: '', phone: '', availability: '' },
+      autocomplete: null,
+      carouselIndex: 0,
+      mapInitialized: false
+    };
+
+    // --- Initial Setup ---
+    element.innerHTML = '';
+    const container = document.createElement('div');
+    container.style.cssText = `width: 100%; display: flex; justify-content: center; align-items: flex-start; background-color: transparent; margin: 0; padding: 10px 0; font-family: ${fontFamily};`;
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'property-calc-wrapper';
+    wrapper.style.cssText = `
+      width: 100%; max-width: 480px;
+      border: 1px solid #dee2e6; border-radius: ${borderRadius};
+      overflow: hidden; background-color: ${backgroundColor};
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: ${height}px;
+      display: flex; flex-direction: column; margin: 0 auto; position: relative;
+      opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease;
+    `;
+
+    // --- HTML Structure ---
+    wrapper.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .property-calc-wrapper * { box-sizing: border-box; font-family: inherit; }
+        .workflow-header { background-color: ${primaryColor}; color: white; padding: 16px 20px; text-align: center; flex-shrink: 0; }
+        .workflow-header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        .workflow-content { flex: 1; overflow-y: auto; position: relative; }
+        .workflow-step { display: none; animation: fadeIn 0.4s ease-in-out; padding: 25px; height: 100%; }
+        .workflow-step.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .step-title { font-size: 22px; font-weight: 700; color: ${textColor}; margin-bottom: 10px; text-align: center; }
+        .step-description { font-size: 15px; color: #555; line-height: 1.6; margin-bottom: 25px; text-align: center; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 20px; width: 100%; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: ${borderRadius}; font-size: 16px; box-sizing: border-box; }
+        .form-input:focus { outline: none; border-color: ${primaryColor}; box-shadow: 0 0 0 2px ${primaryColor}40; }
+        
+        /* Location Step */
+        .search-input-container { position: relative; display: flex; align-items: center; margin-bottom: 20px; }
+        .search-input { padding-right: 100px; }
+        .search-btn { position: absolute; right: 4px; height: calc(100% - 8px); background-color: ${primaryColor}; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 12px; }
+        .search-btn:hover { background-color: ${secondaryColor}; }
+
+        /* Map Section */
+        .map-section { margin-top: 20px; width: 100%; margin-bottom: 20px; }
+        .map-container { border-radius: ${borderRadius}; overflow: hidden; border: 2px solid ${primaryColor}; width: 100%; position: relative; aspect-ratio: 4/3; background-color: #e9ecef; }
+        .map-container iframe { width: 100%; height: 100%; border: none; }
+        .map-fallback { display: none; padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 8px; height: 100%; width: 100%; box-sizing: border-box; }
+        .map-confirmation-text { margin: 15px 0 5px; text-align: center; font-weight: 500; font-size: 14px; }
+        
+        /* Loading overlay for map */
+        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; z-index: 10; border-radius: ${borderRadius}; }
+        .loading-spinner { width: 40px; height: 40px; border: 4px solid rgba(58, 95, 138, 0.2); border-radius: 50%; border-top: 4px solid ${primaryColor}; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Budget Step */
+        .input-group { display: flex; align-items: center; }
+        .input-group-prepend { padding: 12px; background-color: #e9ecef; border: 1px solid #ced4da; border-right: none; border-radius: ${borderRadius} 0 0 ${borderRadius}; }
+        .input-group .form-input { border-radius: 0 ${borderRadius} ${borderRadius} 0; }
+
+        /* Results Step */
+        .results-summary { background-color: ${formBackgroundColor}; padding: 20px; border-radius: ${borderRadius}; text-align: center; margin-bottom: 20px; }
+        .budget-label { font-size: 16px; font-weight: 500; color: #555; margin-bottom: 5px; }
+        .budget-amount { font-size: 32px; font-weight: 700; color: ${primaryColor}; }
+        .disclaimer { font-size: 12px; color: #777; margin-top: 15px; line-height: 1.5; }
+        
+        /* Property Carousel */
+        .carousel-container { width: 100%; height: 280px; position: relative; }
+        .carousel-track-wrapper { overflow: hidden; height: 100%; }
+        .carousel-track { display: flex; height: 100%; transition: transform 0.4s ease; }
+        .property-card { width: 100%; flex-shrink: 0; padding: 0 5px; cursor: pointer; }
+        .property-card-inner { border: 2px solid #e0e0e0; border-radius: ${borderRadius}; overflow: hidden; height: 100%; display: flex; flex-direction: column; transition: border-color 0.2s; background: #fff; }
+        .property-card.selected .property-card-inner { border-color: ${primaryColor}; }
+        .property-image { width: 100%; height: 150px; object-fit: cover; }
+        .property-info { padding: 15px; text-align: center; flex-grow: 1; }
+        .property-name { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+        .property-price { font-size: 15px; font-weight: 500; color: ${primaryColor}; }
+        .carousel-nav { display: flex; justify-content: center; align-items: center; margin-top: 15px; }
+        .nav-arrow { cursor: pointer; padding: 5px; color: #888; }
+        .nav-arrow.disabled { color: #ccc; cursor: not-allowed; }
+        .nav-dots { display: flex; gap: 8px; margin: 0 15px; }
+        .nav-dot { width: 10px; height: 10px; background: #ccc; border-radius: 50%; transition: background 0.2s; cursor: pointer; }
+        .nav-dot.active { background: ${primaryColor}; }
+
+        /* Confirmation Step */
+        .confirmation-container { text-align: center; padding-top: 50px; }
+        .confirmation-icon { color: #28a745; width: 80px; height: 80px; margin-bottom: 20px; }
+
+        /* Buttons */
+        .btn-container { padding: 20px; width: 100%; background: #fff; border-top: 1px solid #eee; flex-shrink: 0;}
+        .btn { display: block; width: 100%; padding: 15px; border-radius: ${borderRadius}; font-weight: 600; cursor: pointer; border: none; font-size: 16px; transition: all 0.2s ease; }
+        .btn-primary { background-color: ${accentColor}; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: ${secondaryColor}; }
+        .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* Fix for autocomplete dropdown */
+        .pac-container { z-index: 10000 !important; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid #eaeaea; margin-top: 4px; font-family: inherit; }
+        .pac-item { padding: 8px 10px; cursor: pointer; font-family: inherit !important; }
+        .pac-item:hover { background-color: #f5f5f5; }
+        .pac-icon { margin-right: 8px; }
+        .pac-item-query { font-size: 14px; font-weight: 500; }
+      </style>
+
+      <div class="workflow-header"><h2>${workflowTitle}</h2></div>
+      <div class="workflow-content">
+        <!-- Step 1: Location -->
+        <div id="step-location" class="workflow-step">
+          <h3 class="step-title">Where are you looking?</h3>
+          <p class="step-description">Start by telling us the area in or around Xàbia that interests you most.</p>
+          <div class="form-group">
+            <label for="accommodation-input">Location</label>
+            <div class="search-input-container">
+              <input type="text" id="accommodation-input" class="form-input search-input" placeholder="Xàbia, Costa Blanca..." required>
+              <button type="button" class="search-btn" id="update-map-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+          </div>
+          <div class="map-section" id="map-section">
+            <div class="map-container" id="location-map"></div>
+            <div class="map-fallback" id="location-map-fallback">
+              <p>Unable to display map.</p>
+              <p id="fallback-address"></p>
+            </div>
+            <p class="map-confirmation-text" id="map-confirmation-text" style="display: none;">Is this the correct location?</p>
+          </div>
+        </div>
+        <!-- Step 2: Budget Inputs -->
+        <div id="step-budget" class="workflow-step">
+            <h3 class="step-title">Let's Talk Budget</h3>
+            <p class="step-description">Provide some details so we can estimate your property budget.</p>
+            <div class="form-group">
+                <label for="income-input">Your Net Monthly Income</label>
+                <div class="input-group"><span class="input-group-prepend">€</span><input type="number" id="income-input" class="form-input" placeholder="3000"></div>
+            </div>
+            <div class="form-group">
+                <label for="deposit-input">Your Available Deposit</label>
+                <div class="input-group"><span class="input-group-prepend">€</span><input type="number" id="deposit-input" class="form-input" placeholder="50000"></div>
+            </div>
+        </div>
+        <!-- Step 3: Results -->
+        <div id="step-results" class="workflow-step">
+            <div class="results-summary">
+                <p class="budget-label">Your Estimated Property Budget</p>
+                <p id="budget-amount" class="budget-amount">€0</p>
+                <p class="disclaimer"><strong>Disclaimer:</strong> This is an estimate for demonstration purposes only. A qualified agent will provide an accurate financial assessment.</p>
+            </div>
+            <h4 style="text-align: center; font-weight: 600; margin-bottom: 15px;">Properties in Your Range</h4>
+            <div class="carousel-container">
+                <div class="carousel-track-wrapper"><div class="carousel-track" id="carousel-track"></div></div>
+            </div>
+            <div class="carousel-nav">
+                <div class="nav-arrow" id="prev-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </div>
+                <div class="nav-dots" id="nav-dots"></div>
+                <div class="nav-arrow" id="next-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </div>
+        </div>
+        <!-- Step 4: Contact Form -->
+        <div id="step-form" class="workflow-step">
+            <h3 class="step-title">Request a Viewing</h3>
+            <p class="step-description">You're one step away! Provide your details and preferred availability.</p>
+            <div class="form-group"><label for="name-input">Full Name</label><input type="text" id="name-input" class="form-input" required></div>
+            <div class="form-group"><label for="email-input">Email Address</label><input type="email" id="email-input" class="form-input" required></div>
+            <div class="form-group"><label for="availability-input">Your Availability</label><textarea id="availability-input" class="form-input" rows="3" placeholder="e.g., Weekday afternoons, this weekend..."></textarea></div>
+        </div>
+        <!-- Step 5: Confirmation -->
+        <div id="step-confirmation" class="workflow-step">
+            <div class="confirmation-container">
+                <svg class="confirmation-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <h3 class="step-title">Inquiry Sent!</h3>
+                <p class="step-description">Thank you, [Customer Name]. We've received your request and one of our expert agents will contact you shortly to arrange your viewing.</p>
+            </div>
+        </div>
+      </div>
+      <div class="btn-container">
+        <button id="main-btn" class="btn btn-primary" disabled>Next</button>
+      </div>
+    `;
+    
+    container.appendChild(wrapper);
+    element.appendChild(container);
+
+    // --- Post-Render Animation ---
+    setTimeout(() => {
+      wrapper.style.opacity = '1';
+      wrapper.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // --- DOM References ---
+    const mainBtn = wrapper.querySelector('#main-btn');
+    const steps = {
+        location: wrapper.querySelector('#step-location'),
+        budget: wrapper.querySelector('#step-budget'),
+        results: wrapper.querySelector('#step-results'),
+        form: wrapper.querySelector('#step-form'),
+        confirmation: wrapper.querySelector('#step-confirmation')
+    };
+    const incomeInput = wrapper.querySelector('#income-input');
+    const depositInput = wrapper.querySelector('#deposit-input');
+    const nameInput = wrapper.querySelector('#name-input');
+    const emailInput = wrapper.querySelector('#email-input');
+    const accommodationInput = wrapper.querySelector('#accommodation-input');
+    const updateMapBtn = wrapper.querySelector('#update-map-btn');
+
+    // --- Google Maps Integration (copied and adapted from DirectionsWorkflow) ---
+    
+    // Function to load Google Maps API with Places library using bootstrap loader
+    const loadGoogleMapsScript = () => {
+      return new Promise((resolve, reject) => {
+        // Check if API is already loaded
+        if (window.google && window.google.maps && window.google.maps.places) {
+          console.log('Google Maps API already loaded');
+          resolve();
+          return;
+        }
+        
+        // Define callback function that will be called by Google Maps API
+        window.initGoogleMapsPropertyCalc = function() {
+          console.log('Google Maps API loaded successfully via callback');
+          resolve();
+        };
+        
+        // Set a timeout to catch loading failures
+        const timeoutId = setTimeout(() => {
+          console.error('Google Maps API loading timed out');
+          reject(new Error('Google Maps API loading timed out'));
+        }, 10000);
+        
+        // Create the bootstrap loader script
+        const script = document.createElement('script');
+        script.innerHTML = `
+          (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=\`https://maps.\${c}apis.com/maps/api/js?\`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "${apiKey}",
+            v: "alpha"
+          });
+        `;
+        
+        script.onload = function() {
+          clearTimeout(timeoutId);
+          console.log('Google Maps bootstrap script loaded');
+          
+          // Try to load the places library immediately
+          setTimeout(async () => {
+            try {
+              if (window.google && window.google.maps) {
+                await window.google.maps.importLibrary("places");
+                clearTimeout(timeoutId);
+                console.log('Places library loaded via importLibrary');
+                resolve();
+              }
+            } catch (err) {
+              console.warn('Initial importLibrary attempt failed:', err);
+              // Don't reject here, the callback might still work
+            }
+          }, 500);
+        };
+        
+        script.onerror = function(error) {
+          clearTimeout(timeoutId);
+          console.error('Error loading Google Maps bootstrap script:', error);
+          reject(new Error('Failed to load Google Maps API'));
+        };
+        
+        document.head.appendChild(script);
+      });
+    };
+
+    // Function to display the default map of Xàbia area
+    function showDefaultMap() {
+      const mapContainer = wrapper.querySelector('#location-map');
+      const mapFallback = wrapper.querySelector('#location-map-fallback');
+      
+      if (mapContainer) {
+        try {
+          // Create an iframe with default Xàbia location
+          const mapUrl = `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${defaultLat},${defaultLng}&zoom=13&maptype=roadmap`;
+          
+          mapContainer.innerHTML = `
+            <iframe
+              width="100%"
+              height="100%"
+              frameborder="0"
+              style="border:0"
+              src="${mapUrl}"
+              allowfullscreen
+              onload="document.getElementById('location-map').style.display='block'; document.getElementById('location-map-fallback').style.display='none';"
+              onerror="document.getElementById('location-map').style.display='none'; document.getElementById('location-map-fallback').style.display='block';"
+            ></iframe>
+          `;
+          
+          // Fallback in case iframe doesn't load
+          if (mapFallback) {
+            const fallbackAddressEl = mapFallback.querySelector('#fallback-address');
+            if (fallbackAddressEl) {
+              fallbackAddressEl.textContent = "Xàbia, Costa Blanca, Spain";
+            }
+          }
+        } catch (error) {
+          console.error('Error embedding default map:', error);
+          if (mapContainer) mapContainer.style.display = 'none';
+          if (mapFallback) mapFallback.style.display = 'block';
+        }
+      }
+    }
+
+    // Function to show loading state in the map
+    function showMapLoadingState() {
+      const mapContainer = wrapper.querySelector('#location-map');
+      
+      if (mapContainer) {
+        // Check if loading overlay already exists
+        let loadingOverlay = mapContainer.querySelector('.loading-overlay');
+        
+        if (!loadingOverlay) {
+          // Create loading overlay
+          loadingOverlay = document.createElement('div');
+          loadingOverlay.className = 'loading-overlay';
+          loadingOverlay.innerHTML = `
+            <div class="loading-spinner"></div>
+          `;
+          
+          // Add loading overlay to the map container
+          mapContainer.appendChild(loadingOverlay);
+        } else {
+          // Show existing loading overlay
+          loadingOverlay.style.display = 'flex';
+        }
+      }
+    }
+
+    // Function to hide loading state in the map
+    function hideMapLoadingState() {
+      const mapContainer = wrapper.querySelector('#location-map');
+      
+      if (mapContainer) {
+        const loadingOverlay = mapContainer.querySelector('.loading-overlay');
+        if (loadingOverlay) {
+          loadingOverlay.style.display = 'none';
+        }
+      }
+    }
+
+    // Function to update the map with a selected place
+    function updateMapForLocation(place) {
+      if (!place || !place.geometry) {
+        console.error('Invalid place object for map update');
+        return;
+      }
+
+      // Format and save location data
+      const locationData = {
+        address: place.formatted_address || place.name,
+        placeId: place.place_id,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng()
+      };
+      
+      workflowData.userLocation = locationData;
+      
+      // Create and embed the map using place ID
+      const mapContainer = wrapper.querySelector('#location-map');
+      const mapFallback = wrapper.querySelector('#location-map-fallback');
+      const confirmationText = wrapper.querySelector('#map-confirmation-text');
+      
+      if (mapContainer) {
+        try {
+          // Use place ID for more accurate mapping
+          const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=place_id:${locationData.placeId}&zoom=15&maptype=roadmap`;
+          
+          // First create iframe element
+          const iframe = document.createElement('iframe');
+          iframe.width = '100%';
+          iframe.height = '100%';
+          iframe.frameBorder = '0';
+          iframe.style.border = '0';
+          iframe.src = mapUrl;
+          iframe.allowFullscreen = true;
+          
+          // Add onload event to hide loading state when map is loaded
+          iframe.onload = function() {
+            hideMapLoadingState();
+            mapContainer.style.display = 'block';
+            if (mapFallback) mapFallback.style.display = 'none';
+          };
+          
+          // Add onerror event
+          iframe.onerror = function() {
+            hideMapLoadingState();
+            mapContainer.style.display = 'none';
+            if (mapFallback) mapFallback.style.display = 'block';
+          };
+          
+          // Clear the container but keep any loading overlay
+          const loadingOverlay = mapContainer.querySelector('.loading-overlay');
+          mapContainer.innerHTML = '';
+          
+          // Add iframe
+          mapContainer.appendChild(iframe);
+          
+          // Re-add loading overlay if it existed
+          if (loadingOverlay) {
+            mapContainer.appendChild(loadingOverlay);
+          }
+          
+          // Show confirmation text
+          if (confirmationText) {
+            confirmationText.style.display = 'block';
+          }
+          
+          // Fallback in case iframe doesn't load
+          if (mapFallback) {
+            const fallbackAddressEl = mapFallback.querySelector('#fallback-address');
+            if (fallbackAddressEl) {
+              fallbackAddressEl.textContent = locationData.address;
+            }
+          }
+        } catch (error) {
+          console.error('Error embedding map:', error);
+          hideMapLoadingState();
+          if (mapContainer) mapContainer.style.display = 'none';
+          if (mapFallback) mapFallback.style.display = 'block';
+        }
+      }
+
+      // Set workflowData.mapInitialized to true once we've successfully updated the map
+      workflowData.mapInitialized = true;
+      updateButtonState();
+    }
+
+    // Improved function to initialize Google Places Autocomplete with better error handling
+    function setupAutocomplete() {
+      console.log('Setting up autocomplete...');
+      
+      // Check if Google Maps API is loaded
+      if (!window.google || !window.google.maps || !window.google.maps.places) {
+        console.error('Google Maps API not fully loaded, cannot set up autocomplete');
+        return;
+      }
+      
+      // Check if DOM element exists
+      if (!accommodationInput) {
+        console.error('Required input not found for autocomplete');
+        return;
+      }
+      
+      // Initialize autocomplete on the accommodation field
+      console.log('Creating accommodation autocomplete');
+      try {
+        const accommodationOptions = {
+          // Allow both establishments and addresses
+          types: [], // No type restrictions to allow both
+          componentRestrictions: {country: 'es'}, // Spain
+          // Add location bias for Xàbia/Valencia area
+          bounds: new google.maps.LatLngBounds(
+            new google.maps.LatLng(38.7, 0.1), // SW corner of Valencia area
+            new google.maps.LatLng(38.9, 0.4)  // NE corner of Valencia area
+          ),
+          strictBounds: false, // Allow results outside the bounds
+          fields: ['formatted_address', 'geometry', 'name', 'place_id']
+        };
+        
+        const autocomplete = new google.maps.places.Autocomplete(accommodationInput, accommodationOptions);
+        
+        // When a place is selected
+        autocomplete.addListener('place_changed', function() {
+          const place = autocomplete.getPlace();
+          
+          if (!place.geometry) {
+            console.error('No place details available for selection');
+            return;
+          }
+          
+          // The place data is already captured in the input field
+          console.log('Place selected:', place.name);
+          
+          // Update the map with the selected place
+          updateMapForLocation(place);
+        });
+        
+        console.log('Accommodation autocomplete successfully initialized');
+      } catch (error) {
+        console.error('Error initializing accommodation autocomplete:', error);
+      }
+    }
+
+    // Geocode an address using the Geocoding API
+    function geocodeAddress(address) {
+      const region = 'Xàbia'; // Always use Xàbia as the region
+      const fullAddress = address.includes('Xàbia') || address.includes('Javea') ? address : `${address}, ${region}, Costa Blanca, Spain`;
+      
+      const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`;
+      
+      fetch(geocodingUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            const result = data.results[0];
+            
+            // Create a mock place object that matches the Google Places structure
+            const mockPlace = {
+              formatted_address: result.formatted_address,
+              place_id: result.place_id,
+              name: result.formatted_address.split(',')[0],
+              geometry: {
+                location: {
+                  lat: () => result.geometry.location.lat,
+                  lng: () => result.geometry.location.lng
+                }
+              }
+            };
+            
+            // Update the map with this place
+            updateMapForLocation(mockPlace);
+          } else {
+            console.error('Geocoding API error or no results:', data.status);
+            alert('Unable to find the location. Please try again with more specific address details.');
+            
+            // Hide loading state
+            hideMapLoadingState();
+            
+            // Show error in map container
+            const mapContainer = wrapper.querySelector('#location-map');
+            if (mapContainer) {
+              mapContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                  <p>Unable to find the location.</p>
+                  <p>Please try again with more specific address details.</p>
+                </div>
+              `;
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error using Geocoding API:', error);
+          alert('Unable to find the location. Please check your internet connection and try again.');
+          
+          // Hide loading state
+          hideMapLoadingState();
+        });
+    }
+
+    // --- Core Functions ---
+    function showStep(stepName) {
+        workflowData.currentStep = stepName;
+        Object.values(steps).forEach(s => s.classList.remove('active'));
+        steps[stepName].classList.add('active');
+        updateButtonState();
+    }
+    
+    function updateButtonState() {
+        mainBtn.style.display = 'block';
+        switch(workflowData.currentStep) {
+            case 'location':
+                mainBtn.textContent = 'Next';
+                mainBtn.disabled = !workflowData.mapInitialized;
+                break;
+            case 'budget':
+                mainBtn.textContent = 'Calculate My Budget';
+                mainBtn.disabled = !incomeInput.value || !depositInput.value;
+                break;
+            case 'results':
+                mainBtn.textContent = 'Request a Viewing';
+                mainBtn.disabled = !workflowData.selectedProperty;
+                break;
+            case 'form':
+                mainBtn.textContent = 'Submit Inquiry';
+                mainBtn.disabled = !nameInput.value || !emailInput.value;
+                break;
+            case 'confirmation':
+                mainBtn.style.display = 'none';
+                break;
+        }
+    }
+    
+    function calculateBudget() {
+        const income = parseFloat(incomeInput.value) || 0;
+        const deposit = parseFloat(depositInput.value) || 0;
+        const maxMonthlyPayment = income * 0.35;
+        const estimatedLoan = maxMonthlyPayment * 12 * 12.5;
+        workflowData.calculatedBudget = Math.round((estimatedLoan + deposit) / 1000) * 1000;
+        workflowData.matchingProperties = propertiesData.filter(p => p.price <= workflowData.calculatedBudget);
+        if (workflowData.matchingProperties.length === 0) {
+            workflowData.matchingProperties = propertiesData.sort((a,b) => a.price - b.price).slice(0, 3);
+        }
+        workflowData.carouselIndex = 0;
+        workflowData.selectedProperty = workflowData.matchingProperties[0];
+        renderResults();
+    }
+
+    function renderResults() {
+        wrapper.querySelector('#budget-amount').textContent = `€${workflowData.calculatedBudget.toLocaleString('es-ES')}`;
+        renderCarousel();
+        updateButtonState();
+    }
+
+    function renderCarousel() {
+        const track = wrapper.querySelector('#carousel-track');
+        const dotsContainer = wrapper.querySelector('#nav-dots');
+        track.innerHTML = '';
+        dotsContainer.innerHTML = '';
+        track.style.width = `${workflowData.matchingProperties.length * 100}%`;
+        workflowData.matchingProperties.forEach((p, index) => {
+            const card = document.createElement('div');
+            card.className = 'property-card';
+            card.dataset.propertyId = p.id;
+            if (index === workflowData.carouselIndex) card.classList.add('selected');
+            card.innerHTML = `<div class="property-card-inner"><img src="${p.image}" alt="${p.name}" class="property-image"><div class="property-info"><p class="property-name">${p.name}</p><p class="property-price">€${p.price.toLocaleString('es-ES')}</p></div></div>`;
+            track.appendChild(card);
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot';
+            if (index === workflowData.carouselIndex) dot.classList.add('active');
+            dot.dataset.index = index;
+            dotsContainer.appendChild(dot);
+        });
+        updateCarouselPosition();
+    }
+    
+    function updateCarouselPosition() {
+        const track = wrapper.querySelector('#carousel-track');
+        track.style.transform = `translateX(-${(workflowData.carouselIndex / workflowData.matchingProperties.length) * 100}%)`;
+        wrapper.querySelectorAll('.nav-dot').forEach((dot, index) => dot.classList.toggle('active', index === workflowData.carouselIndex));
+        wrapper.querySelectorAll('.property-card').forEach((card, index) => card.classList.toggle('selected', index === workflowData.carouselIndex));
+        workflowData.selectedProperty = workflowData.matchingProperties[workflowData.carouselIndex];
+        wrapper.querySelector('#prev-arrow').classList.toggle('disabled', workflowData.carouselIndex === 0);
+        wrapper.querySelector('#next-arrow').classList.toggle('disabled', workflowData.carouselIndex === workflowData.matchingProperties.length - 1);
+        updateButtonState();
+    }
+
+    // --- Event Listeners ---
+    
+    // Main button click handler
+    mainBtn.addEventListener('click', () => {
+        switch(workflowData.currentStep) {
+            case 'location': 
+                showStep('budget'); 
+                break;
+            case 'budget': 
+                calculateBudget(); 
+                showStep('results'); 
+                break;
+            case 'results': 
+                showStep('form'); 
+                break;
+            case 'form':
+                workflowData.contactInfo.name = nameInput.value;
+                workflowData.contactInfo.email = emailInput.value;
+                workflowData.contactInfo.availability = wrapper.querySelector('#availability-input').value;
+                steps.confirmation.querySelector('.step-description').textContent = `Thank you, ${workflowData.contactInfo.name}. We've received your request and one of our expert agents will contact you shortly to arrange your viewing.`;
+                if (window.voiceflow?.chat) {
+                    window.voiceflow.chat.interact({
+                        type: 'request',
+                        payload: { type: 'property-inquiry-complete', data: workflowData }
+                    });
+                }
+                showStep('confirmation');
+                break;
+        }
+    });
+
+    // Input validation listeners
+    [incomeInput, depositInput, nameInput, emailInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updateButtonState);
+        }
+    });
+
+    // Carousel navigation
+    const prevArrow = wrapper.querySelector('#prev-arrow');
+    const nextArrow = wrapper.querySelector('#next-arrow');
+    const navDots = wrapper.querySelector('#nav-dots');
+
+    if (prevArrow) {
+        prevArrow.addEventListener('click', () => { 
+            if (workflowData.carouselIndex > 0) { 
+                workflowData.carouselIndex--; 
+                updateCarouselPosition(); 
+            } 
+        });
+    }
+
+    if (nextArrow) {
+        nextArrow.addEventListener('click', () => { 
+            if (workflowData.carouselIndex < workflowData.matchingProperties.length - 1) { 
+                workflowData.carouselIndex++; 
+                updateCarouselPosition(); 
+            } 
+        });
+    }
+
+    if (navDots) {
+        navDots.addEventListener('click', (e) => { 
+            if (e.target.matches('.nav-dot')) { 
+                workflowData.carouselIndex = parseInt(e.target.dataset.index); 
+                updateCarouselPosition(); 
+            } 
+        });
+    }
+
+    // Map search functionality
+    if (updateMapBtn) {
+        updateMapBtn.addEventListener('click', () => {
+            const accommodationValue = accommodationInput ? accommodationInput.value : '';
+            if (accommodationValue) {
+                // Show loading state in the map container
+                showMapLoadingState();
+                
+                // Start geocoding
+                geocodeAddress(accommodationValue);
+            } else {
+                alert('Please enter a location name or address');
+            }
+        });
+    }
+
+    // Enter key in accommodation input
+    if (accommodationInput) {
+        accommodationInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent form submission
+                if (updateMapBtn) {
+                    updateMapBtn.click(); // Trigger the update map function
+                }
+            }
+        });
+    }
+
+    // --- Initialization ---
+    
+    // Initialize the workflow with robust handling
+    loadGoogleMapsScript()
+      .then(() => {
+        console.log('Google Maps API loaded successfully');
+        setupAutocomplete();
+        // Show default map
+        showDefaultMap();
+      })
+      .catch(error => {
+        console.error('Failed to load Google Maps API:', error);
+        // Add direct script tag as a fallback
+        console.log('Adding direct script tag as fallback after API load failure');
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&v=weekly`;
+        script.onload = () => {
+          console.log('Fallback Google Maps API loaded');
+          setTimeout(() => {
+            setupAutocomplete();
+            showDefaultMap();
+          }, 500);
+        };
+        document.head.appendChild(script);
+      });
+
+    // Initialize first step
+    showStep('location');
+
+    return function cleanup() {
+        // Cleanup function if needed
+    };
   }
 };
