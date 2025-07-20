@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xàbia Properties - Premium Real Estate</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e4080 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #ffd700;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23007acc" width="1200" height="600"/><path fill="%23ffffff" opacity="0.1" d="M0,300 Q300,200 600,300 T1200,300 L1200,600 L0,600 Z"/><circle fill="%23ffd700" opacity="0.3" cx="1000" cy="100" r="80"/></svg>');
+            background-size: cover;
+            background-position: center;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Search Bar */
+        .search-container {
+            background: white;
+            margin: -60px auto 60px;
+            max-width: 1000px;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .search-tab.active {
+            border-bottom-color: #2c5aa0;
+            color: #2c5aa0;
+            font-weight: bold;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.8rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2c5aa0;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #2c5aa0, #1e4080);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Featured Properties */
+        .featured {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #2c5aa0;
+        }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .property-image {
+            height: 250px;
+            background: linear-gradient(45deg, #007acc, #00a0ff);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .property-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250"><rect fill="%23007acc" width="400" height="250"/><rect fill="%23ffffff" opacity="0.2" x="50" y="50" width="80" height="60" rx="5"/><rect fill="%23ffffff" opacity="0.2" x="150" y="50" width="80" height="60" rx="5"/><rect fill="%23ffffff" opacity="0.2" x="250" y="50" width="80" height="60" rx="5"/><rect fill="%23ffffff" opacity="0.15" x="80" y="130" width="200" height="80" rx="10"/><circle fill="%23ffd700" opacity="0.4" cx="350" cy="50" r="30"/></svg>');
+            background-size: cover;
+        }
+
+        .property-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .property-badge.sale {
+            background: #28a745;
+        }
+
+        .property-info {
+            padding: 1.5rem;
+        }
+
+        .property-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 0.5rem;
+        }
+
+        .property-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .property-location {
+            color: #666;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .property-features {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .property-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, #2c5aa0, #1e4080);
+            color: white;
+            padding: 4rem 0;
+            margin: 4rem 0;
+        }
+
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #ffd700;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #333;
+            color: #999;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .properties-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-home"></i> Xàbia Properties
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#properties">Properties</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Discover Paradise in Xàbia</h1>
+            <p>Luxury Mediterranean properties with stunning sea views</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <div class="search-container">
+        <div class="search-tabs">
+            <div class="search-tab active">
+                <i class="fas fa-home"></i> Buy
+            </div>
+            <div class="search-tab">
+                <i class="fas fa-key"></i> Rent
+            </div>
+            <div class="search-tab">
+                <i class="fas fa-chart-line"></i> Invest
+            </div>
+        </div>
+        <form class="search-form">
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" placeholder="Xàbia, Costa Blanca..." value="Xàbia">
+            </div>
+            <div class="form-group">
+                <label for="property-type">Property Type</label>
+                <select id="property-type">
+                    <option>All Types</option>
+                    <option>Villa</option>
+                    <option>Apartment</option>
+                    <option>Penthouse</option>
+                    <option>Townhouse</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="min-price">Min Price</label>
+                <select id="min-price">
+                    <option>No Min</option>
+                    <option>€200,000</option>
+                    <option>€500,000</option>
+                    <option>€1,000,000</option>
+                    <option>€2,000,000</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="max-price">Max Price</label>
+                <select id="max-price">
+                    <option>No Max</option>
+                    <option>€500,000</option>
+                    <option>€1,000,000</option>
+                    <option>€2,000,000</option>
+                    <option>€5,000,000</option>
+                </select>
+            </div>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Featured Properties -->
+    <section class="featured">
+        <h2 class="section-title">Featured Properties in Xàbia</h2>
+        <div class="properties-grid">
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="property-badge sale">For Sale</div>
+                </div>
+                <div class="property-info">
+                    <div class="property-price">€1,250,000</div>
+                    <h3 class="property-title">Luxury Sea View Villa</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Cabo de la Nao, Xàbia
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i> 4
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i> 3
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-ruler-combined"></i> 320m²
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-swimming-pool"></i> Pool
+                        </div>
+                    </div>
+                    <p class="property-description">
+                        Stunning modern villa with panoramic Mediterranean views, private pool, and direct beach access. Perfect for luxury living in Xàbia's most prestigious area.
+                    </p>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="property-badge">For Rent</div>
+                </div>
+                <div class="property-info">
+                    <div class="property-price">€3,500/month</div>
+                    <h3 class="property-title">Beachfront Apartment</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Arenal Beach, Xàbia
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i> 2
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i> 2
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-ruler-combined"></i> 120m²
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-car"></i> Garage
+                        </div>
+                    </div>
+                    <p class="property-description">
+                        Modern 2-bedroom apartment just steps from Arenal Beach. Features a large terrace with sea views and all modern amenities.
+                    </p>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="property-badge sale">For Sale</div>
+                </div>
+                <div class="property-info">
+                    <div class="property-price">€895,000</div>
+                    <h3 class="property-title">Historic Town Center Villa</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Old Town, Xàbia
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i> 3
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i> 2
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-ruler-combined"></i> 250m²
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-tree"></i> Garden
+                        </div>
+                    </div>
+                    <p class="property-description">
+                        Charming traditional villa in Xàbia's historic center, recently renovated with modern amenities while preserving original character.
+                    </p>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="property-badge sale">For Sale</div>
+                </div>
+                <div class="property-info">
+                    <div class="property-price">€2,100,000</div>
+                    <h3 class="property-title">Luxury Penthouse</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Montañar, Xàbia
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i> 4
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i> 4
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-ruler-combined"></i> 400m²
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-hot-tub"></i> Spa
+                        </div>
+                    </div>
+                    <p class="property-description">
+                        Exclusive penthouse with 360° views of the Mediterranean and Montgo mountain. Features luxury finishes, private elevator, and rooftop terrace.
+                    </p>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="property-badge">For Rent</div>
+                </div>
+                <div class="property-info">
+                    <div class="property-price">€2,200/month</div>
+                    <h3 class="property-title">Family Villa with Pool</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Pinosol, Xàbia
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i> 3
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i> 2
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-ruler-combined"></i> 180m²
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-swimming-pool"></i> Pool
+                        </div>
+                    </div>
+                    <p class="property-description">
+                        Perfect family home in quiet residential area with private pool, large garden, and easy access to international schools.
+                    </p>
+                </div>
+            </div>
+
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="property-badge sale">For Sale</div>
+                </div>
+                <div class="property-info">
+                    <div class="property-price">€650,000</div>
+                    <h3 class="property-title">Modern Townhouse</h3>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Port Area, Xàbia
+                    </div>
+                    <div class="property-features">
+                        <div class="feature">
+                            <i class="fas fa-bed"></i> 2
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bath"></i> 2
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-ruler-combined"></i> 150m²
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-anchor"></i> Marina
+                        </div>
+                    </div>
+                    <p class="property-description">
+                        Contemporary townhouse near the marina with sea glimpses. Walking distance to restaurants, shops, and the beautiful pebble beach.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+            <div class="stat-item">
+                <h3>500+</h3>
+                <p>Properties Listed</p>
+            </div>
+            <div class="stat-item">
+                <h3>15</h3>
+                <p>Years Experience</p>
+            </div>
+            <div class="stat-item">
+                <h3>98%</h3>
+                <p>Client Satisfaction</p>
+            </div>
+            <div class="stat-item">
+                <h3>€2.5B</h3>
+                <p>Properties Sold</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Xàbia Properties</h4>
+                <p>Your trusted partner for premium real estate in the heart of Costa Blanca. Discover your dream Mediterranean home today.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="#properties">Properties</a>
+                <a href="#buy">Buy</a>
+                <a href="#rent">Rent</a>
+                <a href="#invest">Invest</a>
+                <a href="#mortgage">Mortgage Calculator</a>
+            </div>
+            <div class="footer-section">
+                <h4>Areas</h4>
+                <a href="#arenal">Arenal Beach</a>
+                <a href="#old-town">Old Town</a>
+                <a href="#port">Port Area</a>
+                <a href="#montgo">Montgo Natural Park</a>
+                <a href="#cabo">Cabo de la Nao</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p><i class="fas fa-phone"></i> +34 965 123 456</p>
+                <p><i class="fas fa-envelope"></i> info@xabiaproperties.com</p>
+                <p><i class="fas fa-map-marker-alt"></i> Calle Mayor 123, Xàbia</p>
+                <div style="margin-top: 1rem;">
+                    <a href="#facebook"><i class="fab fa-facebook" style="font-size: 1.5rem; margin-right: 1rem;"></i></a>
+                    <a href="#instagram"><i class="fab fa-instagram" style="font-size: 1.5rem; margin-right: 1rem;"></i></a>
+                    <a href="#youtube"><i class="fab fa-youtube" style="font-size: 1.5rem;"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Xàbia Properties. All rights reserved. | Privacy Policy | Terms of Service</p>
+        </div>
+    </footer>
+
+    <script>
+        // Search tabs functionality
+        document.querySelectorAll('.search-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Property card hover effects
+        document.querySelectorAll('.property-card').forEach(card => {
+            card.addEventListener('click', function() {
+                alert('Property details would open here. This is a demo!');
+            });
+        });
+
+        // Search form submission
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Search functionality would be implemented here. This is a demo!');
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
