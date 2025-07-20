@@ -1,3 +1,5 @@
+import { config } from './config.js';
+
 //YRS: Tour Quiz Finder - VERSION 1
 
 export const TourFinderQuizExtension1 = {
@@ -323,7 +325,7 @@ export const PropertyCalculatorExtension1 = {
   render: ({ trace, element }) => {
     // --- Configuration (Styled to match Xàbia Properties website) ---
     const {
-      apiKey = 'AIzaSyA5y-Tq-IEhgS1NQxY7HgnXe4pPA4tPuH4', // IMPORTANT: Replace with your actual API key
+      apiKey = config.googleMaps.apiKey, // Load API key from config file
       workflowTitle = 'Xàbia Property Finder',
       height = '700',
       primaryColor = '#3a5f8a',      // Professional Blue from screenshot
