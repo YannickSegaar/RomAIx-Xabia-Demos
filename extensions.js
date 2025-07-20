@@ -7376,3 +7376,388 @@ export const PropertyCalculatorExtension3 = {
     return function cleanup() { /* ... */ };
   }
 };
+
+
+//YRS: Property Calculator - VERSION 4
+
+export const PropertyCalculatorExtension4 = {
+  name: 'PropertyCalculator4',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_propertyCalculator4' || trace.payload?.name === 'ext_propertyCalculator4',
+  render: ({ trace, element }) => {
+    // --- Configuration (Styled to match Xàbia Properties website) ---
+    const {
+      apiKey = config.googleMaps.apiKey, // Load API key from config file
+      workflowTitle = 'Xàbia Property Finder',
+      height = '700',
+      primaryColor = '#3a5f8a',      // Professional Blue from screenshot
+      secondaryColor = '#2c5282',    // Darker Blue for hover
+      accentColor = '#3a5f8a',       // Using primary blue for buttons
+      backgroundColor = '#ffffff',
+      formBackgroundColor = '#f8f9fa',
+      textColor = '#333333',
+      borderRadius = '8px',
+      fontFamily = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+    } = trace.payload || {};
+
+    // --- Sample Property Data (for demo purposes) ---
+    const propertiesData = [
+        { id: 'finca-montgo', name: 'Traditional Finca near Montgó', price: 850000, image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2e0?q=80&w=870&auto=format&fit=crop', description: 'Tranquility and space with a private plot and pool.'},
+        { id: 'atico-arenal', name: 'Modern Penthouse in El Arenal', price: 680000, image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=870&auto=format&fit=crop', description: 'Spacious and stylish, steps from the beach and restaurants.'},
+        { id: 'apto-puerto', name: 'Apartment in The Port', price: 450000, image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=870&auto=format&fit=crop', description: 'Perfect for enjoying the vibrant port atmosphere and amenities.'},
+        { id: 'villa-grana', name: 'Luxury Villa in Granadella', price: 1850000, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=870&auto=format&fit=crop', description: 'Front-line luxury with stunning sea views.'}
+    ];
+
+    // --- State Management ---
+    const workflowData = {
+      currentStep: 'location',
+      userLocation: { address: '', lat: 0, lng: 0, placeId: '' },
+      budgetInputs: { income: '', deposit: '', term: '25' },
+      calculatedBudget: 0,
+      matchingProperties: [],
+      selectedProperty: null,
+      contactInfo: { name: '', email: '', phone: '', availability: '' },
+      autocomplete: null,
+      carouselIndex: 0,
+      mapInitialized: false
+    };
+
+    // --- Initial Setup ---
+    element.innerHTML = '';
+    const container = document.createElement('div');
+    container.style.cssText = `width: 100%; display: flex; justify-content: center; align-items: flex-start; background-color: transparent; margin: 0; padding: 10px 0; font-family: ${fontFamily};`;
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'property-calc-wrapper';
+    wrapper.style.cssText = `
+      width: 100%; max-width: 480px;
+      border: 1px solid #dee2e6; border-radius: ${borderRadius};
+      overflow: hidden; background-color: ${backgroundColor};
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: ${height}px;
+      display: flex; flex-direction: column; margin: 0 auto; position: relative;
+      opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease;
+    `;
+
+    // --- HTML Structure ---
+    wrapper.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .property-calc-wrapper * { box-sizing: border-box; font-family: inherit; }
+        .workflow-header { background-color: ${primaryColor}; color: white; padding: 16px 20px; text-align: center; flex-shrink: 0; }
+        .workflow-header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        .workflow-content { flex: 1; overflow-y: auto; position: relative; }
+        .workflow-step { display: none; animation: fadeIn 0.4s ease-in-out; padding: 25px; height: 100%; }
+        .workflow-step.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .step-title { font-size: 22px; font-weight: 700; color: ${textColor}; margin-bottom: 10px; text-align: center; }
+        .step-description { font-size: 15px; color: #555; line-height: 1.6; margin-bottom: 25px; text-align: center; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: ${borderRadius}; font-size: 16px; }
+        .form-input:focus { outline: none; border-color: ${primaryColor}; box-shadow: 0 0 0 2px ${primaryColor}40; }
+        
+        /* Location Step */
+        #location-autocomplete-container input { width: 100%; }
+
+        /* Map Section */
+        .map-section { margin-top: 20px; width: 100%; }
+        .map-container { border-radius: ${borderRadius}; overflow: hidden; border: 1px solid #dee2e6; width: 100%; position: relative; aspect-ratio: 4/3; background-color: #e9ecef; }
+        .map-container iframe { width: 100%; height: 100%; border: none; }
+        .map-confirmation-text { margin: 15px 0 5px; text-align: center; font-weight: 500; font-size: 14px; }
+
+        /* Budget Step */
+        .input-group { display: flex; align-items: center; }
+        .input-group-prepend { padding: 12px; background-color: #e9ecef; border: 1px solid #ced4da; border-right: none; border-radius: ${borderRadius} 0 0 ${borderRadius}; }
+        .input-group .form-input { border-radius: 0 ${borderRadius} ${borderRadius} 0; }
+
+        /* Results Step */
+        .results-summary { background-color: ${formBackgroundColor}; padding: 20px; border-radius: ${borderRadius}; text-align: center; margin-bottom: 20px; }
+        .budget-label { font-size: 16px; font-weight: 500; color: #555; margin-bottom: 5px; }
+        .budget-amount { font-size: 32px; font-weight: 700; color: ${primaryColor}; }
+        .disclaimer { font-size: 12px; color: #777; margin-top: 15px; line-height: 1.5; }
+        
+        /* Property Carousel */
+        .carousel-container { width: 100%; height: 280px; position: relative; }
+        .carousel-track-wrapper { overflow: hidden; height: 100%; }
+        .carousel-track { display: flex; height: 100%; transition: transform 0.4s ease; }
+        .property-card { width: 100%; flex-shrink: 0; padding: 0 5px; cursor: pointer; }
+        .property-card-inner { border: 2px solid #e0e0e0; border-radius: ${borderRadius}; overflow: hidden; height: 100%; display: flex; flex-direction: column; transition: border-color 0.2s; background: #fff; }
+        .property-card.selected .property-card-inner { border-color: ${primaryColor}; }
+        .property-image { width: 100%; height: 150px; object-fit: cover; }
+        .property-info { padding: 15px; text-align: center; flex-grow: 1; }
+        .property-name { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+        .property-price { font-size: 15px; font-weight: 500; color: ${primaryColor}; }
+        .carousel-nav { display: flex; justify-content: center; align-items: center; margin-top: 15px; }
+        .nav-arrow { cursor: pointer; padding: 5px; color: #888; }
+        .nav-arrow.disabled { color: #ccc; cursor: not-allowed; }
+        .nav-dots { display: flex; gap: 8px; margin: 0 15px; }
+        .nav-dot { width: 10px; height: 10px; background: #ccc; border-radius: 50%; transition: background 0.2s; cursor: pointer; }
+        .nav-dot.active { background: ${primaryColor}; }
+
+        /* Confirmation Step */
+        .confirmation-container { text-align: center; padding-top: 50px; }
+        .confirmation-icon { color: #28a745; width: 80px; height: 80px; margin-bottom: 20px; }
+
+        /* Buttons */
+        .btn-container { padding: 20px; width: 100%; background: #fff; border-top: 1px solid #eee; flex-shrink: 0;}
+        .btn { display: block; width: 100%; padding: 15px; border-radius: ${borderRadius}; font-weight: 600; cursor: pointer; border: none; font-size: 16px; transition: all 0.2s ease; }
+        .btn-primary { background-color: ${accentColor}; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: ${secondaryColor}; }
+        .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
+      </style>
+
+      <div class="workflow-header"><h2>${workflowTitle}</h2></div>
+      <div class="workflow-content">
+        <!-- Step 1: Location -->
+        <div id="step-location" class="workflow-step">
+          <h3 class="step-title">Where are you looking?</h3>
+          <p class="step-description">Start by telling us the area in or around Xàbia that interests you most.</p>
+          <div class="form-group" id="location-autocomplete-container"></div>
+          <div class="map-section" id="map-section">
+            <div class="map-container" id="location-map"></div>
+            <p class="map-confirmation-text" id="map-confirmation-text" style="display: none;">Is this the correct location?</p>
+          </div>
+        </div>
+        <!-- Step 2: Budget Inputs -->
+        <div id="step-budget" class="workflow-step">
+            <h3 class="step-title">Let's Talk Budget</h3>
+            <p class="step-description">Provide some details so we can estimate your property budget.</p>
+            <div class="form-group">
+                <label for="income-input">Your Net Monthly Income</label>
+                <div class="input-group"><span class="input-group-prepend">€</span><input type="number" id="income-input" class="form-input" placeholder="3000"></div>
+            </div>
+            <div class="form-group">
+                <label for="deposit-input">Your Available Deposit</label>
+                <div class="input-group"><span class="input-group-prepend">€</span><input type="number" id="deposit-input" class="form-input" placeholder="50000"></div>
+            </div>
+        </div>
+        <!-- Step 3: Results -->
+        <div id="step-results" class="workflow-step">
+            <div class="results-summary">
+                <p class="budget-label">Your Estimated Property Budget</p>
+                <p id="budget-amount" class="budget-amount">€0</p>
+                <p class="disclaimer"><strong>Disclaimer:</strong> This is an estimate for demonstration purposes only. A qualified agent will provide an accurate financial assessment.</p>
+            </div>
+            <h4 style="text-align: center; font-weight: 600; margin-bottom: 15px;">Properties in Your Range</h4>
+            <div class="carousel-container">
+                <div class="carousel-track-wrapper"><div class="carousel-track" id="carousel-track"></div></div>
+            </div>
+            <div class="carousel-nav">
+                <div class="nav-arrow" id="prev-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </div>
+                <div class="nav-dots" id="nav-dots"></div>
+                <div class="nav-arrow" id="next-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </div>
+        </div>
+        <!-- Step 4: Contact Form -->
+        <div id="step-form" class="workflow-step">
+            <h3 class="step-title">Request a Viewing</h3>
+            <p class="step-description">You're one step away! Provide your details and preferred availability.</p>
+            <div class="form-group"><label for="name-input">Full Name</label><input type="text" id="name-input" class="form-input" required></div>
+            <div class="form-group"><label for="email-input">Email Address</label><input type="email" id="email-input" class="form-input" required></div>
+            <div class="form-group"><label for="availability-input">Your Availability</label><textarea id="availability-input" class="form-input" rows="3" placeholder="e.g., Weekday afternoons, this weekend..."></textarea></div>
+        </div>
+        <!-- Step 5: Confirmation -->
+        <div id="step-confirmation" class="workflow-step">
+            <div class="confirmation-container">
+                <svg class="confirmation-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <h3 class="step-title">Inquiry Sent!</h3>
+                <p class="step-description">Thank you, [Customer Name]. We've received your request and one of our expert agents will contact you shortly to arrange your viewing.</p>
+            </div>
+        </div>
+      </div>
+      <div class="btn-container">
+        <button id="main-btn" class="btn btn-primary" disabled>Next</button>
+      </div>
+    `;
+    
+    container.appendChild(wrapper);
+    element.appendChild(container);
+
+    // --- Post-Render Animation ---
+    setTimeout(() => {
+      wrapper.style.opacity = '1';
+      wrapper.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // --- DOM References ---
+    const mainBtn = wrapper.querySelector('#main-btn');
+    const steps = {
+        location: wrapper.querySelector('#step-location'),
+        budget: wrapper.querySelector('#step-budget'),
+        results: wrapper.querySelector('#step-results'),
+        form: wrapper.querySelector('#step-form'),
+        confirmation: wrapper.querySelector('#step-confirmation')
+    };
+    const incomeInput = wrapper.querySelector('#income-input');
+    const depositInput = wrapper.querySelector('#deposit-input');
+    const nameInput = wrapper.querySelector('#name-input');
+    const emailInput = wrapper.querySelector('#email-input');
+
+    // --- Core Functions ---
+    function showStep(stepName) {
+        workflowData.currentStep = stepName;
+        Object.values(steps).forEach(s => s.classList.remove('active'));
+        steps[stepName].classList.add('active');
+        updateButtonState();
+    }
+    
+    function updateButtonState() {
+        mainBtn.style.display = 'block';
+        switch(workflowData.currentStep) {
+            case 'location':
+                mainBtn.textContent = 'Next';
+                mainBtn.disabled = !workflowData.mapInitialized;
+                break;
+            case 'budget':
+                mainBtn.textContent = 'Calculate My Budget';
+                mainBtn.disabled = !incomeInput.value || !depositInput.value;
+                break;
+            case 'results':
+                mainBtn.textContent = 'Request a Viewing';
+                mainBtn.disabled = !workflowData.selectedProperty;
+                break;
+            case 'form':
+                mainBtn.textContent = 'Submit Inquiry';
+                mainBtn.disabled = !nameInput.value || !emailInput.value;
+                break;
+            case 'confirmation':
+                mainBtn.style.display = 'none';
+                break;
+        }
+    }
+    
+    function calculateBudget() {
+        const income = parseFloat(incomeInput.value) || 0;
+        const deposit = parseFloat(depositInput.value) || 0;
+        const maxMonthlyPayment = income * 0.35;
+        const estimatedLoan = maxMonthlyPayment * 12 * 12.5;
+        workflowData.calculatedBudget = Math.round((estimatedLoan + deposit) / 1000) * 1000;
+        workflowData.matchingProperties = propertiesData.filter(p => p.price <= workflowData.calculatedBudget);
+        if (workflowData.matchingProperties.length === 0) {
+            workflowData.matchingProperties = propertiesData.sort((a,b) => a.price - b.price).slice(0, 3);
+        }
+        workflowData.carouselIndex = 0;
+        workflowData.selectedProperty = workflowData.matchingProperties[0];
+        renderResults();
+    }
+
+    function renderResults() {
+        wrapper.querySelector('#budget-amount').textContent = `€${workflowData.calculatedBudget.toLocaleString('es-ES')}`;
+        renderCarousel();
+        updateButtonState();
+    }
+
+    function renderCarousel() {
+        const track = wrapper.querySelector('#carousel-track');
+        const dotsContainer = wrapper.querySelector('#nav-dots');
+        track.innerHTML = '';
+        dotsContainer.innerHTML = '';
+        track.style.width = `${workflowData.matchingProperties.length * 100}%`;
+        workflowData.matchingProperties.forEach((p, index) => {
+            const card = document.createElement('div');
+            card.className = 'property-card';
+            card.dataset.propertyId = p.id;
+            if (index === workflowData.carouselIndex) card.classList.add('selected');
+            card.innerHTML = `<div class="property-card-inner"><img src="${p.image}" alt="${p.name}" class="property-image"><div class="property-info"><p class="property-name">${p.name}</p><p class="property-price">€${p.price.toLocaleString('es-ES')}</p></div></div>`;
+            track.appendChild(card);
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot';
+            if (index === workflowData.carouselIndex) dot.classList.add('active');
+            dot.dataset.index = index;
+            dotsContainer.appendChild(dot);
+        });
+        updateCarouselPosition();
+    }
+    
+    function updateCarouselPosition() {
+        const track = wrapper.querySelector('#carousel-track');
+        track.style.transform = `translateX(-${(workflowData.carouselIndex / workflowData.matchingProperties.length) * 100}%)`;
+        wrapper.querySelectorAll('.nav-dot').forEach((dot, index) => dot.classList.toggle('active', index === workflowData.carouselIndex));
+        wrapper.querySelectorAll('.property-card').forEach((card, index) => card.classList.toggle('selected', index === workflowData.carouselIndex));
+        workflowData.selectedProperty = workflowData.matchingProperties[workflowData.carouselIndex];
+        wrapper.querySelector('#prev-arrow').classList.toggle('disabled', workflowData.carouselIndex === 0);
+        wrapper.querySelector('#next-arrow').classList.toggle('disabled', workflowData.carouselIndex === workflowData.matchingProperties.length - 1);
+        updateButtonState();
+    }
+
+    function updateMapForLocation(place) {
+      if (!place || !place.geometry) { return; }
+      workflowData.userLocation = {
+        address: place.formattedAddress,
+        placeId: place.id,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      };
+      const mapContainer = wrapper.querySelector('#location-map');
+      const confirmationText = wrapper.querySelector('#map-confirmation-text');
+      const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=place_id:${workflowData.userLocation.placeId}&zoom=15`;
+      mapContainer.innerHTML = `<iframe src="${mapUrl}" loading="lazy"></iframe>`;
+      confirmationText.style.display = 'block';
+      workflowData.mapInitialized = true;
+      updateButtonState();
+    }
+    
+    async function loadGoogleMapsScript() {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        initializeAutocomplete();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async&callback=initGoogleMaps`;
+      script.defer = true;
+      window.initGoogleMaps = initializeAutocomplete;
+      document.head.appendChild(script);
+    }
+
+    async function initializeAutocomplete() {
+        const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
+        const autocompleteElement = new PlaceAutocompleteElement();
+        const container = wrapper.querySelector('#location-autocomplete-container');
+        container.innerHTML = '';
+        container.appendChild(autocompleteElement);
+        autocompleteElement.addEventListener('gmp-placeselect', (event) => {
+            updateMapForLocation(event.place);
+        });
+    }
+    
+    mainBtn.addEventListener('click', () => {
+        switch(workflowData.currentStep) {
+            case 'location': showStep('budget'); break;
+            case 'budget': calculateBudget(); showStep('results'); break;
+            case 'results': showStep('form'); break;
+            case 'form':
+                workflowData.contactInfo.name = nameInput.value;
+                workflowData.contactInfo.email = emailInput.value;
+                workflowData.contactInfo.availability = wrapper.querySelector('#availability-input').value;
+                steps.confirmation.querySelector('.step-description').textContent = `Thank you, ${workflowData.contactInfo.name}. We've received your request and one of our expert agents will contact you shortly to arrange your viewing.`;
+                if (window.voiceflow?.chat) {
+                    window.voiceflow.chat.interact({
+                        type: 'request',
+                        payload: { type: 'property-inquiry-complete', data: workflowData }
+                    });
+                }
+                showStep('confirmation');
+                break;
+        }
+    });
+
+    [incomeInput, depositInput, nameInput, emailInput].forEach(input => input.addEventListener('input', updateButtonState));
+    wrapper.querySelector('#prev-arrow').addEventListener('click', () => { if (workflowData.carouselIndex > 0) { workflowData.carouselIndex--; updateCarouselPosition(); } });
+    wrapper.querySelector('#next-arrow').addEventListener('click', () => { if (workflowData.carouselIndex < workflowData.matchingProperties.length - 1) { workflowData.carouselIndex++; updateCarouselPosition(); } });
+    wrapper.querySelector('#nav-dots').addEventListener('click', (e) => { if (e.target.matches('.nav-dot')) { workflowData.carouselIndex = parseInt(e.target.dataset.index); updateCarouselPosition(); } });
+
+    // --- Initial Kick-off ---
+    showStep('location');
+    loadGoogleMapsScript();
+
+    return function cleanup() {};
+  }
+};
