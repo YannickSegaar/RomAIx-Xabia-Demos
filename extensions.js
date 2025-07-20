@@ -7388,7 +7388,7 @@ export const PropertyCalculatorExtension4 = {
   render: ({ trace, element }) => {
     // --- Configuration (Styled to match Xàbia Properties website) ---
     const {
-      apiKey = config.googleMaps.apiKey, // Load API key from config file
+      apiKey = 'AIzaSyA5y-Tq-IEhgS1NQxY7HgnXe4pPA4tPuH4', // Load API key from config file
       workflowTitle = 'Xàbia Property Finder',
       height = '700',
       primaryColor = '#3a5f8a',      // Professional Blue from screenshot
