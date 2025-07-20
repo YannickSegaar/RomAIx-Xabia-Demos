@@ -61,7 +61,7 @@
         /* Hero Section */
         .hero {
             background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23007acc" width="1200" height="600"/><path fill="%23ffffff" opacity="0.1" d="M0,300 Q300,200 600,300 T1200,300 L1200,600 L0,600 Z"/><circle fill="%23ffd700" opacity="0.3" cx="1000" cy="100" r="80"/></svg>');
+                        url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Hero Background Image.png');
             background-size: cover;
             background-position: center;
             height: 500px;
@@ -206,21 +206,52 @@
         }
 
         .property-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250"><rect fill="%23007acc" width="400" height="250"/><rect fill="%23ffffff" opacity="0.2" x="50" y="50" width="80" height="60" rx="5"/><rect fill="%23ffffff" opacity="0.2" x="150" y="50" width="80" height="60" rx="5"/><rect fill="%23ffffff" opacity="0.2" x="250" y="50" width="80" height="60" rx="5"/><rect fill="%23ffffff" opacity="0.15" x="80" y="130" width="200" height="80" rx="10"/><circle fill="%23ffd700" opacity="0.4" cx="350" cy="50" r="30"/></svg>');
+            display: none; /* Remove the SVG overlay */
+        }
+
+        /* Individual property images */
+        .property-card:nth-child(1) .property-image {
+            background: url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Property Image 1 - Luxury Sea View Villa.png');
             background-size: cover;
+            background-position: center;
+        }
+
+        .property-card:nth-child(2) .property-image {
+            background: url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Property Image 2 - Beachfront Apartment.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .property-card:nth-child(3) .property-image {
+            background: url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Property Image 3 - Historic Town Center Villa.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .property-card:nth-child(4) .property-image {
+            background: url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Property Image 4 - Luxury Penthouse.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .property-card:nth-child(5) .property-image {
+            background: url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Property Image 5 - Family Villa with Pool.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .property-card:nth-child(6) .property-image {
+            background: url('https://yannicksegaar.github.io/RomAIx-Xabia-Demos/RealEstate_WebsiteImages/Property Image 6 - Modern Townhouse.png');
+            background-size: cover;
+            background-position: center;
         }
 
         .property-badge {
             position: absolute;
             top: 15px;
             left: 15px;
-            background: #ff6b6b;
+            background: rgba(255, 107, 107, 0.9);
+            backdrop-filter: blur(10px);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -229,7 +260,8 @@
         }
 
         .property-badge.sale {
-            background: #28a745;
+            background: rgba(40, 167, 69, 0.9);
+            backdrop-filter: blur(10px);
         }
 
         .property-info {
