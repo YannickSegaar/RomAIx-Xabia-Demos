@@ -774,6 +774,68 @@
                 }
             });
         });
-    </script>
+</script>
+
+<body>
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Voiceflow Chat Widget Container -->
+  <div id="flat-chat"></div>
+  <div id="voiceflow-chat-frame"></div>
+
+  <!-- Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <!-- Voiceflow Chat Widget and Extensions Script -->
+  <script type="module">
+    console.log("Script loaded. Initializing Voiceflow chat widget...");
+
+    // Import extensions from the extensions.js file
+    import {
+      TourFinderQuizExtension1
+    } from '/extensions.js';
+
+    // Load the Voiceflow chat widget with extensions
+    (function (d, t) {
+      var v = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+      v.onload = function () {
+        console.log("Voiceflow widget script loaded. Initializing chat...");
+
+        window.voiceflow.chat.load({
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your Voiceflow project ID
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production', // Use 'development' for testing or 'production' for live
+          voice: { 
+            url: "https://runtime-api.voiceflow.com" 
+          },
+          user: {
+            name: 'Demo User',
+          },
+          render: {
+            mode: 'overlay',
+          },
+          autostart: true,
+          allowDangerousHTML: true,
+          assistant: {
+            extensions: [
+            TourFinderQuizExtension1
+            ],
+            stylesheet: "https://yannicksegaar.github.io/DX_Demo/VF_styles.css",
+          },
+        }).then(() => {
+          console.log("Voiceflow chat initialized successfully.");
+          // Initialize the handoff listener with the Voiceflow runtime
+          setupHandoffListener(window.voiceflow.chat.runtime);
+        }).catch((error) => {
+          console.error("Error initializing Voiceflow chat:", error);
+        });
+      };
+      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs'; // Updated to the new widget version
+      v.type = 'text/javascript';
+      s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
 </body>
 </html>
