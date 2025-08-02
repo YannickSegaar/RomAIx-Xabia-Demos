@@ -11620,3 +11620,949 @@ export const WinterExplorerQuizExtension3 = {
     };
   }
 };
+
+
+export const WinterExplorerQuizExtension4 = {
+  name: 'WinterExplorerQuiz',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_winterExplorerQuiz4' || trace.payload?.name === 'ext_winterExplorerQuiz4',
+  render: ({ trace, element }) => {
+    // --- Configuration from Voiceflow Payload ---
+    const {
+      workflowTitle = 'Find Your Norwegian Winter Persona',
+      height = '700',
+      backgroundColor = '#FFFFFF',
+      maxWidth = '500px',
+      // --- Branding from Instructions ---
+      primaryColor = '#3B534E', // Forest Green
+      secondaryColor = '#6C92A6', // Arctic Blue
+      accentColor = '#F0F4F8', // Pristine White/Light Blue-Gray
+      highlightColor = '#587C74', // Muted Teal
+      // --- Border & Shadow ---
+      borderWidth = '1px',
+      borderColor = '#E0E7EF',
+      borderStyle = 'solid',
+      borderRadius = '16px',
+      shadowColor = 'rgba(108, 146, 166, 0.15)',
+      shadowSize = '12px',
+      animateIn = true,
+    } = trace.payload || {};
+
+    // --- Quiz Questions Data with Service-Oriented Fun Facts ---
+    const questions = [
+      {
+        id: 'q1-activity',
+        title: 'Your perfect Norwegian winter day involves:',
+        description: 'What kind of activity energizes you the most in a winter wonderland?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1517264109451-423e4e942858?q=80&w=1974&auto=format&fit=crop',
+        options: [
+          { id: 'q1a', text: 'Quietly observing a frozen fjord', image: 'https://images.unsplash.com/photo-1613399708793-47514385a9a3?q=80&w=2070&auto=format&fit=crop', points: { n: 2, c: 1 }, funFact: 'That\'s a fantastic choice! Our \'Silent Fjord\' tour is special because it navigates through two UNESCO World Heritage fjords, giving you a front-row seat to their majesty.' },
+          { id: 'q1b', text: 'Learning to ski with a local guide', image: 'https://images.unsplash.com/photo-1549972349-89467c459092?q=80&w=1964&auto=format&fit=crop', points: { u: 2, a: 1 }, funFact: 'You\'ll love this! Our local ski guides are certified experts who not only teach you the technique but also share stories passed down through generations.' },
+          { id: 'q1c', text: 'Finding a dramatic landscape for a photo', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop', points: { n: 2, a: 1 }, funFact: 'Perfect! Our photography tours are timed for the "blue hour" of the Arctic winter, ensuring you get the most magical light for your shots.' },
+          { id: 'q1d', text: 'Dog sledding across a snowy plateau', image: 'https://images.unsplash.com/photo-1557259273-350a95c55717?q=80&w=1949&auto=format&fit=crop', points: { a: 2, u: 1 }, funFact: 'Awesome choice! The husky teams on our sledding tours are raised ethically by local families, making the experience authentic and responsible.' },
+        ]
+      },
+      {
+        id: 'q2-priority',
+        title: 'When you travel, you prioritize:',
+        description: 'What is the most important element of a truly memorable trip for you?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1542640244-1b693529d4b3?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q2a', text: 'Minimizing your carbon footprint', image: 'https://images.unsplash.com/photo-1611273735312-499a5b5a79ba?q=80&w=2070&auto=format&fit=crop', points: { c: 2 }, funFact: 'A wonderful goal! Every tour we offer is certified carbon-neutral, and our fjord cruises use the latest generation of silent, electric vessels.' },
+          { id: 'q2b', text: 'Authentic cultural interactions', image: 'https://images.unsplash.com/photo-1579523600589-de83a38a5a5d?q=80&w=1974&auto=format&fit=crop', points: { u: 2 }, funFact: 'Fantastic! We partner with local communities to ensure our tours, like the \'Heritage Trail & Local Flavors,\' offer genuine connections and support local traditions.' },
+          { id: 'q2c', text: 'Thrilling new experiences', image: 'https://images.unsplash.com/photo-1605648212948-895a0a259c04?q=80&w=2070&auto=format&fit=crop', points: { a: 2 }, funFact: 'Love the energy! Our \'Fjord Adrenaline Package\' includes a high-speed RIB boat safari designed to give you a safe but exhilarating ride through the narrowest parts of the fjord.' },
+          { id: 'q2d', text: 'Scenic beauty and tranquility', image: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070&auto=format&fit=crop', points: { n: 2 }, funFact: 'A perfect choice. Our Northern Lights tours take you far from city light pollution to our exclusive aurora camps, maximizing your chances of a spectacular, peaceful viewing.' },
+        ]
+      },
+      {
+        id: 'q3-sustainability',
+        title: 'Which sustainable practice resonates most?',
+        description: 'Your choices help protect the pristine beauty of Norway for future generations.',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1599394022839-a82a6133532b?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q3a', text: 'Supporting local, family-owned businesses', image: 'https://images.unsplash.com/photo-1524733988523-b691a15f02c1?q=80&w=1949&auto=format&fit=crop', points: { u: 2, c: 1 }, funFact: 'That\'s the spirit! Over 90% of our partners—from guides to cafes—are small, local businesses, ensuring your visit directly benefits the communities you explore.' },
+          { id: 'q3b', text: 'Choosing electric-powered transport', image: 'https://images.unsplash.com/photo-1629053093138-72b68f50ef75?q=80&w=2071&auto=format&fit=crop', points: { c: 2, a: 1 }, funFact: 'Excellent! Our flagship \'Silent Fjord\' tour exclusively uses state-of-the-art electric ferries, making us a pioneer of sustainable travel in the region.' },
+          { id: 'q3c', text: 'Following \'leave no trace\' principles', image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=2175&auto=format&fit=crop', points: { n: 2, c: 1 }, funFact: 'Respect! All our guided hikes and nature walks include a brief on "friluftsliv," the Norwegian philosophy of appreciating and preserving nature.' },
+          { id: 'q3d', text: 'Learning about local conservation efforts', image: 'https://images.unsplash.com/photo-1579282240050-848595738a21?q=80&w=1974&auto=format&fit=crop', points: { c: 2, u: 1 }, funFact: 'Wonderful! A portion of every ticket sold is donated to local conservation projects aimed at protecting the fjord ecosystems and Arctic wildlife.' },
+        ]
+      },
+      {
+        id: 'q4-instinct',
+        title: 'You see a stunning view. Your first instinct is to:',
+        description: 'How do you capture and experience a perfect moment?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1505364812370-153d6a0954a6?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q4a', text: 'Soak in the moment, feeling the peace', image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?q=80&w=1974&auto=format&fit=crop', points: { c: 1, n: 1 }, funFact: 'Beautiful. The design of our silent electric ships minimizes noise, allowing you to fully immerse yourself in the profound silence of the winter fjords.' },
+          { id: 'q4b', text: 'Frame the perfect photograph', image: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?q=80&w=1974&auto=format&fit=crop', points: { n: 2 }, funFact: 'Great eye! Our \'Arctic Light Safari\' is guided by a professional photographer who will take you to secret spots for the most breathtaking compositions.' },
+          { id: 'q4c', text: 'Ask a local about the folklore of the place', image: 'https://images.unsplash.com/photo-1528422101344-78d67a1262b3?q=80&w=1974&auto=format&fit=crop', points: { u: 2 }, funFact: 'Curiosity is key! On our \'Heritage Trail\' tour, local guides share fascinating troll folklore and Viking legends connected to the very landscapes you see.' },
+          { id: 'q4d', text: 'Find a hiking trail to the summit', image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=2070&auto=format&fit=crop', points: { a: 2 }, funFact: 'Adventure on! Our guided snowshoe hikes take you safely up to the Stegastein viewpoint, offering a panoramic view of the fjord you can\'t get anywhere else.' },
+        ]
+      },
+      {
+        id: 'q5-evening',
+        title: 'Your ideal evening on a winter trip is:',
+        description: 'After a day of exploring, how do you like to unwind?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q5a', text: 'A fireside chat at a sustainable lodge', image: 'https://images.unsplash.com/photo-1549488344-cbb6c34cf08b?q=80&w=1974&auto=format&fit=crop', points: { c: 2, u: 1 }, funFact: 'So cozy! We partner with lodges that have earned the "Norwegian Ecotourism" certification, ensuring your comfort doesn\'t come at the expense of the environment.' },
+          { id: 'q5b', text: 'Hunting for the Northern Lights', image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=2070&auto=format&fit=crop', points: { a: 2, n: 1 }, funFact: 'A magical quest! Our guides use real-time solar activity data to take you to the locations with the highest probability of a spectacular aurora display each night.' },
+          { id: 'q5c', text: 'A traditional meal with local ingredients', image: 'https://images.unsplash.com/photo-1604329221061-aa139a03915c?q=80&w=2070&auto=format&fit=crop', points: { u: 2, c: 1 }, funFact: 'Delicious! Our \'Local Flavors\' dinner experience sources all ingredients from within a 50km radius, offering a true taste of the fjord-to-table culinary scene.' },
+          { id: 'q5d', text: 'Reviewing the day\'s photos', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1964&auto=format&fit=crop', points: { n: 2 }, funFact: 'A perfect end to the day! Guests on our photography tour get access to a post-trip editing session with their guide to make their best photos truly shine.' },
+        ]
+      }
+    ];
+
+    // --- Persona Results Data ---
+    const personaResults = {
+      c: {
+        id: 'conscious-explorer',
+        name: 'The Conscious Explorer',
+        description: 'You travel with purpose, seeking to leave places better than you found them. Your journey is defined by responsible choices, deep respect for nature, and a desire to support sustainable practices.',
+        image: 'https://images.unsplash.com/photo-1629053093138-72b68f50ef75?q=80&w=2071&auto=format&fit=crop',
+        personalizationHook: 'Because you value **{answerText}**, this tour is a perfect match.',
+        recommendation: {
+          name: 'Silent Fjord & Glacier Tour',
+          details: 'Experience the majesty of the fjords on a silent electric ship, followed by a guided hike on a breathtaking glacier. This tour is fully carbon-neutral.',
+          bookingUrl: '#' // Placeholder URL
+        }
+      },
+      u: {
+        id: 'cultural-immersionist',
+        name: 'The Cultural Immersionist',
+        description: 'You believe travel is about understanding the heart of a place through its people, traditions, and stories. You seek authentic experiences, from local cuisine to ancient folklore.',
+        image: 'https://images.unsplash.com/photo-1533109721025-d1ae7de8488a?q=80&w=1974&auto=format&fit=crop',
+        personalizationHook: 'Since you\'re drawn to **{answerText}**, you\'ll love this cultural journey.',
+        recommendation: {
+          name: 'Heritage Trail & Local Flavors',
+          details: 'Journey on the historic Flåm Railway, visit a traditional Stave Church, and end your day with a meal prepared by local chefs using regional ingredients.',
+          bookingUrl: '#' // Placeholder URL
+        }
+      },
+      n: {
+        id: 'nature-photographer',
+        name: 'The Nature Photographer',
+        description: 'You see the world through a creative lens, always searching for the perfect light and composition. Your goal is to capture the raw, untouched beauty of the landscape.',
+        image: 'https://images.unsplash.com/photo-1547756536-cdeaf2a2fa8c?q=80&w=2070&auto=format&fit=crop',
+        personalizationHook: 'Your passion for **{answerText}** makes this photogenic tour ideal for you.',
+        recommendation: {
+          name: 'Arctic Light & Landscape Safari',
+          details: 'A tour designed for photographers, taking you to iconic viewpoints like the Stegastein and remote valleys at the golden hour to capture the perfect winter shot.',
+          bookingUrl: '#' // Placeholder URL
+        }
+      },
+      a: {
+        id: 'adventure-seeker',
+        name: 'The Adventure Seeker',
+        description: 'For you, travel is about pushing boundaries and feeling the thrill of the wild. You crave action-packed days and unforgettable experiences, from snowy landscapes to remote corners of the Arctic.',
+        image: 'https://images.unsplash.com/photo-1502680390469-27c2386b2b85?q=80&w=2070&auto=format&fit=crop',
+        personalizationHook: 'Your love for **{answerText}** means you\'re ready for this thrilling adventure.',
+        recommendation: {
+          name: 'Fjord Adrenaline Package',
+          details: 'Combine a high-speed RIB boat safari on the fjord with an exhilarating snowshoe hike to a stunning viewpoint. This package is for those who want to do it all.',
+          bookingUrl: '#' // Placeholder URL
+        }
+      }
+    };
+
+    // --- State Variables ---
+    let currentStep = 'intro';
+    let answers = {};
+    let calculatingTimeout = null;
+    let currentQuestionIndex = 1;
+
+    // --- Initial Setup ---
+    element.innerHTML = '';
+    const container = document.createElement('div');
+    container.style.cssText = 'width: 100%; display: flex; justify-content: center; align-items: flex-start; background-color: transparent; margin: 0; padding: 10px 0;';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'winter-quiz-wrapper';
+    wrapper.style.cssText = `
+      width: ${maxWidth}; min-width: ${maxWidth}; max-width: ${maxWidth};
+      border: ${borderWidth} ${borderStyle} ${borderColor}; border-radius: ${borderRadius};
+      overflow: hidden; background-color: ${backgroundColor};
+      box-shadow: 0 4px ${shadowSize} ${shadowColor}; height: ${height}px;
+      display: flex; flex-direction: column; margin: 0 auto; position: relative;
+    `;
+    
+    if (animateIn) {
+      wrapper.style.opacity = '0';
+      wrapper.style.transform = 'translateY(20px)';
+      wrapper.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    }
+
+    // --- HTML & CSS for the entire quiz ---
+    wrapper.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&display=swap');
+        
+        .winter-quiz-wrapper * {
+          box-sizing: border-box;
+          font-family: 'Nunito Sans', sans-serif;
+        }
+        
+        .workflow-header {
+          background: ${primaryColor};
+          color: white;
+          padding: 18px 20px;
+          text-align: center;
+          font-weight: 700;
+        }
+        
+        .workflow-header h2 {
+          margin: 0;
+          font-size: 19px;
+          letter-spacing: 0.5px;
+        }
+        
+        .workflow-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 30px 25px 90px 25px;
+          position: relative;
+        }
+        
+        .workflow-step {
+          display: none;
+          animation: fadeIn 0.4s ease-in-out;
+        }
+        
+        .workflow-step.active {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- Progress Indicator --- */
+        .progress-indicator {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          margin-bottom: 25px;
+        }
+        
+        .progress-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: ${borderColor};
+          transition: all 0.3s ease;
+        }
+        
+        .progress-dot.active {
+          background-color: ${secondaryColor};
+          transform: scale(1.3);
+        }
+
+        .progress-dot.completed {
+          background-color: ${primaryColor};
+        }
+        
+        /* --- Intro Step --- */
+        .intro-image {
+          width: 100%;
+          height: 220px;
+          object-fit: cover;
+          border-radius: ${borderRadius};
+          margin-bottom: 25px;
+        }
+        
+        .intro-title, .question-title, .results-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: ${primaryColor};
+          margin-bottom: 15px;
+          text-align: center;
+        }
+        
+        .intro-description, .question-description {
+          font-size: 16px;
+          color: #555;
+          line-height: 1.6;
+          margin-bottom: 25px;
+          text-align: center;
+        }
+        
+        /* --- Question Step --- */
+        .question-image {
+          width: 100%;
+          height: 180px;
+          object-fit: cover;
+          border-radius: 12px;
+          margin-bottom: 20px;
+        }
+        
+        .options-container {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        
+        .option {
+          display: flex;
+          align-items: center;
+          border: 2px solid ${borderColor};
+          border-radius: 12px;
+          padding: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          background-color: white;
+        }
+        
+        .option:hover {
+          border-color: ${secondaryColor};
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px ${shadowColor};
+        }
+        
+        .option.selected {
+          border-color: ${primaryColor};
+          background-color: ${accentColor};
+        }
+        
+        .option-image {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-right: 15px;
+        }
+        
+        .option-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          flex: 1;
+        }
+        
+        .option-check {
+          width: 24px;
+          height: 24px;
+          border: 2px solid ${borderColor};
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .option.selected .option-check {
+          background-color: ${primaryColor};
+          border-color: ${primaryColor};
+        }
+
+        .option-check svg {
+            display: none;
+        }
+
+        .option.selected .option-check svg {
+            display: block;
+        }
+        
+        /* --- Fun Fact Box --- */
+        .fun-fact-box {
+            background: linear-gradient(135deg, ${accentColor}, #fff);
+            border-left: 4px solid ${secondaryColor};
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 20px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+
+        .fun-fact-box.visible {
+            max-height: 200px; /* Adjust as needed */
+            opacity: 1;
+            padding: 15px 20px;
+        }
+
+        .fun-fact-title {
+            font-weight: 700;
+            color: ${primaryColor};
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fun-fact-text {
+            font-size: 15px;
+            color: #576574;
+            line-height: 1.6;
+        }
+
+        /* --- Calculating Step --- */
+        .calculating-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          text-align: center;
+        }
+        
+        .calculating-container .spinner {
+          width: 60px;
+          height: 60px;
+          border: 5px solid ${secondaryColor}50;
+          border-top-color: ${secondaryColor};
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        /* --- Results Step --- */
+        .results-card {
+          background-color: ${accentColor};
+          border-radius: ${borderRadius};
+          padding: 25px;
+          text-align: center;
+          border: 1px solid ${borderColor};
+        }
+
+        .persona-image {
+          width: 120px;
+          height: 120px;
+          object-fit: cover;
+          border-radius: 50%;
+          margin: 0 auto 20px auto;
+          border: 4px solid white;
+          box-shadow: 0 5px 15px ${shadowColor};
+        }
+
+        .persona-name {
+          font-size: 26px;
+          font-weight: 700;
+          color: ${primaryColor};
+          margin: 0 0 10px 0;
+        }
+
+        .persona-description {
+          font-size: 15px;
+          color: #444;
+          line-height: 1.6;
+          margin-bottom: 20px;
+        }
+
+        .personalization-hook {
+            font-style: italic;
+            color: ${primaryColor};
+            margin-bottom: 20px;
+            font-weight: 600;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .recommendation-box {
+          background-color: white;
+          border: 2px dashed ${secondaryColor};
+          padding: 20px;
+          border-radius: 12px;
+          margin-top: 20px;
+        }
+
+        .recommendation-title {
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: ${secondaryColor};
+          margin: 0 0 10px 0;
+        }
+
+        .recommendation-name {
+          font-size: 18px;
+          font-weight: 700;
+          color: ${primaryColor};
+          margin: 0 0 8px 0;
+        }
+
+        .recommendation-details {
+          font-size: 15px;
+          color: #555;
+          line-height: 1.5;
+        }
+
+        .social-sharing {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .social-sharing p {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .social-icons a {
+            color: ${secondaryColor};
+            font-size: 1.8rem;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .social-icons a i {
+            font-size: 1.8rem; /* Ensure FontAwesome icons are sized correctly */
+        }
+
+        .social-icons a:hover {
+            color: ${primaryColor};
+        }
+
+        /* --- Lead Capture Step --- */
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid ${borderColor};
+            font-size: 1rem;
+        }
+        
+        /* --- Bottom Buttons --- */
+        .btn-container {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: space-between;
+          gap: 15px;
+          padding: 20px 25px;
+          background-color: ${backgroundColor};
+          border-top: 1px solid ${borderColor};
+          z-index: 10;
+        }
+        
+        .btn {
+          padding: 14px 20px;
+          border-radius: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          font-size: 16px;
+          transition: all 0.2s ease;
+          flex-grow: 1;
+          text-align: center;
+          text-decoration: none; /* For <a> tags styled as buttons */
+          display: inline-flex; /* For centering content inside */
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .btn-primary {
+          background-color: ${primaryColor};
+          color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+          background-color: ${highlightColor};
+          transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+          background-color: #B0BEC5;
+          cursor: not-allowed;
+          opacity: 0.8;
+        }
+        
+        .btn-secondary {
+          background-color: ${accentColor};
+          color: ${primaryColor};
+          border: 1px solid ${borderColor};
+        }
+        
+        .btn-secondary:hover {
+          background-color: #E8EEF3;
+          transform: translateY(-2px);
+        }
+      </style>
+
+      <div class="workflow-header">
+        <h2 id="header-title">${workflowTitle}</h2>
+      </div>
+
+      <div class="workflow-content">
+        <div id="intro-step" class="workflow-step active">
+          <img class="intro-image" src="https://images.unsplash.com/photo-1548786811-dd6e453ccca7?q=80&w=1974&auto=format&fit=crop" alt="Norwegian Fjord in Winter">
+          <h3 class="intro-title">Discover Your Inner Explorer</h3>
+          <p class="intro-description">Answer 5 questions to reveal your unique Norwegian winter travel style and get a personalized tour recommendation that respects nature and local culture.</p>
+        </div>
+        
+        <div id="question-step" class="workflow-step">
+          <div id="progress-indicator" class="progress-indicator"></div>
+          <div id="question-content">
+            </div>
+        </div>
+        
+        <div id="calculating-step" class="workflow-step">
+          <div class="calculating-container">
+            <div class="spinner"></div>
+            <h3 class="results-title">Analyzing Your Travel Style...</h3>
+            <p class="intro-description">We're matching your preferences with our sustainable adventures.</p>
+          </div>
+        </div>
+        
+        <div id="results-step" class="workflow-step">
+          <div id="results-content">
+             </div>
+        </div>
+
+        <div id="lead-capture-step" class="workflow-step">
+            <h3 class="intro-title">Get Your Personalized Guide!</h3>
+            <p class="intro-description">Enter your details below, and we'll email you your winter persona and a custom guide for your recommended tour.</p>
+            <form id="lead-form">
+                <div class="form-group">
+                    <label for="user-name">Name</label>
+                    <input type="text" id="user-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" name="email" required>
+                </div>
+            </form>
+        </div>
+      </div>
+
+      <div class="btn-container" id="footer-buttons">
+        </div>
+    `;
+
+    // --- Append to DOM ---
+    container.appendChild(wrapper);
+    element.appendChild(container);
+
+    if (animateIn) {
+      setTimeout(() => {
+        wrapper.style.opacity = '1';
+        wrapper.style.transform = 'translateY(0)';
+      }, 100);
+    }
+
+    // --- Core Functions ---
+    function showStep(stepId) {
+      const steps = wrapper.querySelectorAll('.workflow-step');
+      steps.forEach(step => step.classList.remove('active'));
+      
+      const targetStep = wrapper.querySelector(`#${stepId}-step`);
+      if (targetStep) {
+        targetStep.classList.add('active');
+        currentStep = stepId;
+        renderFooterButtons();
+        
+        if (stepId === 'question') renderCurrentQuestion();
+        if (stepId === 'results') renderResults();
+      }
+    }
+
+    function renderFooterButtons() {
+        const footer = wrapper.querySelector('#footer-buttons');
+        let buttonsHTML = '';
+
+        switch(currentStep) {
+            case 'intro':
+                buttonsHTML = `<button id="start-btn" class="btn btn-primary">Start Quiz</button>`;
+                break;
+            case 'question':
+                buttonsHTML = `
+                    <button id="back-btn" class="btn btn-secondary">Back</button>
+                    <button id="next-btn" class="btn btn-primary" disabled>Next</button>
+                `;
+                break;
+            case 'results':
+                 buttonsHTML = `
+                    <a href="#" id="book-now-btn" target="_blank" class="btn btn-primary">Book Now</a>
+                    <button id="email-results-btn" class="btn btn-secondary">Email My Results</button>
+                `;
+                break;
+            case 'lead-capture':
+                buttonsHTML = `
+                    <button id="back-to-results-btn" class="btn btn-secondary">Back</button>
+                    <button id="submit-lead-btn" class="btn btn-primary">Send My Guide</button>
+                `;
+                break;
+            default:
+                buttonsHTML = '';
+                break;
+        }
+        footer.innerHTML = buttonsHTML;
+        setupEventListeners(); // Re-attach listeners after re-rendering buttons
+    }
+    
+    function renderProgressIndicator() {
+      const container = wrapper.querySelector('#progress-indicator');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      const totalSteps = questions.length;
+      
+      for (let i = 1; i <= totalSteps; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'progress-dot';
+        if (i < currentQuestionIndex) dot.classList.add('completed');
+        if (i === currentQuestionIndex) dot.classList.add('active');
+        container.appendChild(dot);
+      }
+    }
+
+    function renderCurrentQuestion() {
+      const index = currentQuestionIndex - 1;
+      const question = questions[index];
+      if (!question) return;
+      
+      renderProgressIndicator();
+      
+      const content = wrapper.querySelector('#question-content');
+      content.innerHTML = `
+        <h3 class="question-title">${question.title}</h3>
+        <p class="question-description">${question.description}</p>
+        <div class="options-container" id="question-options">
+          ${question.options.map(option => `
+            <div class="option" data-option-id="${option.id}">
+              <img class="option-image" src="${option.image}" alt="${option.text}" onerror="this.style.display='none'">
+              <div class="option-text">${option.text}</div>
+              <div class="option-check">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="fun-fact-box" id="fun-fact-box">
+            <div class="fun-fact-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path><path d="M12 22v-6"></path></svg>
+                Insider Tip
+            </div>
+            <p class="fun-fact-text" id="fun-fact-text"></p>
+        </div>
+      `;
+      
+      // Add event listeners AFTER rendering the options
+      const options = wrapper.querySelectorAll('.option');
+      options.forEach(option => {
+          option.onclick = () => {
+              handleOptionClick(question, option.dataset.optionId);
+          };
+      });
+
+      updateSelectedOptions();
+      updateNextButtonState();
+    }
+    
+    function handleOptionClick(question, optionId) {
+      answers[question.id] = optionId;
+      updateSelectedOptions();
+      updateNextButtonState();
+
+      // Display the fun fact
+      const selectedOption = question.options.find(opt => opt.id === optionId);
+      const funFactBox = wrapper.querySelector('#fun-fact-box');
+      const funFactText = wrapper.querySelector('#fun-fact-text');
+
+      if (selectedOption && funFactBox && funFactText) {
+          funFactText.textContent = selectedOption.funFact;
+          funFactBox.classList.add('visible');
+      }
+    }
+    
+    function updateSelectedOptions() {
+      const question = questions[currentQuestionIndex - 1];
+      if (!question) return;
+      
+      const options = wrapper.querySelectorAll('#question-options .option');
+      options.forEach(option => {
+        const optionId = option.dataset.optionId;
+        option.classList.toggle('selected', answers[question.id] === optionId);
+      });
+    }
+    
+    function updateNextButtonState() {
+      const nextBtn = wrapper.querySelector('#next-btn');
+      if (!nextBtn) return;
+      
+      const question = questions[currentQuestionIndex - 1];
+      nextBtn.disabled = !answers[question.id];
+      
+      if (currentQuestionIndex === questions.length) {
+        nextBtn.textContent = 'See Results';
+      } else {
+        nextBtn.textContent = 'Next';
+      }
+    }
+    
+    function calculateResults() {
+      const scores = { c: 0, u: 0, n: 0, a: 0 };
+
+      questions.forEach(question => {
+        const selectedOptionId = answers[question.id];
+        if (selectedOptionId) {
+          const selectedOption = question.options.find(opt => opt.id === selectedOptionId);
+          if (selectedOption && selectedOption.points) {
+            for (const persona in selectedOption.points) {
+              scores[persona] += selectedOption.points[persona];
+            }
+          }
+        }
+      });
+      
+      let topPersona = 'c';
+      let maxScore = 0;
+      for (const persona in scores) {
+        if (scores[persona] > maxScore) {
+          maxScore = scores[persona];
+          topPersona = persona;
+        }
+      }
+      
+      return personaResults[topPersona];
+    }
+    
+    function renderResults() {
+      const result = calculateResults();
+      const content = wrapper.querySelector('#results-content');
+      
+      // Find the text of the user's first answer for personalization
+      const firstAnswerId = answers['q1-activity'];
+      const firstAnswerText = questions[0].options.find(opt => opt.id === firstAnswerId)?.text.toLowerCase() || 'adventure';
+      const personalizedHook = result.personalizationHook.replace('{answerText}', `<strong>${firstAnswerText}</strong>`);
+
+      const shareText = encodeURIComponent(`I discovered I'm a '${result.name}' on my upcoming trip to Norway! Find your winter persona with this fun quiz.`);
+      const shareUrl = encodeURIComponent('https://www.your-tour-company.com'); // Placeholder URL
+
+      content.innerHTML = `
+        <div class="results-card">
+            <img class="persona-image" src="${result.image}" alt="${result.name}" onerror="this.style.display='none'">
+            <h3 class="persona-name">${result.name}</h3>
+            <p class="persona-description">${result.description}</p>
+            <p class="personalization-hook" dangerouslySetInnerHTML={{ __html: personalizedHook }}></p>
+            <div class="recommendation-box">
+                <p class="recommendation-title">Your Recommended Adventure</p>
+                <h4 class="recommendation-name">${result.recommendation.name}</h4>
+                <p class="recommendation-details">${result.recommendation.details}</p>
+            </div>
+            <div class="social-sharing">
+                <p>Share Your Persona!</p>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-square"></i></a>
+                    <a href="https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter-square"></i></a>
+                </div>
+            </div>
+        </div>
+      `;
+      // Use innerHTML for the personalization hook
+      content.querySelector('.personalization-hook').innerHTML = personalizedHook;
+
+      // Set the href for the book now button
+      const bookBtn = wrapper.querySelector('#book-now-btn');
+      if(bookBtn) {
+        bookBtn.href = result.recommendation.bookingUrl;
+      }
+    }
+    
+    function handleCompletion(leadData = {}) {
+      const finalPersona = calculateResults();
+      if (window.voiceflow?.chat) {
+        window.voiceflow.chat.interact({
+          type: 'request',
+          payload: {
+            type: 'winter-quiz-complete',
+            data: {
+              persona: finalPersona.name,
+              recommendedTour: finalPersona.recommendation.name,
+              answers: answers,
+              lead: leadData
+            }
+          }
+        });
+      } else {
+        // Fallback for testing outside Voiceflow
+        alert(`Quiz Complete! Your persona is: ${finalPersona.name}. Lead: ${leadData.name}, ${leadData.email}`);
+      }
+    }
+
+    function setupEventListeners() {
+        const el = (selector) => wrapper.querySelector(selector);
+
+        const startBtn = el('#start-btn');
+        const nextBtn = el('#next-btn');
+        const backBtn = el('#back-btn');
+        const emailResultsBtn = el('#email-results-btn');
+        const backToResultsBtn = el('#back-to-results-btn');
+        const submitLeadBtn = el('#submit-lead-btn');
+        
+        if(startBtn) startBtn.onclick = () => showStep('question');
+        
+        if(nextBtn) nextBtn.onclick = () => {
+            if (currentQuestionIndex < questions.length) {
+                currentQuestionIndex++;
+                showStep('question');
+            } else {
+                showStep('calculating');
+                calculatingTimeout = setTimeout(() => showStep('results'), 2500);
+            }
+        };
+
+        if(backBtn) backBtn.onclick = () => {
+            if (currentQuestionIndex > 1) {
+                currentQuestionIndex--;
+                showStep('question');
+            } else {
+                showStep('intro');
+            }
+        };
+
+        if(emailResultsBtn) emailResultsBtn.onclick = () => showStep('lead-capture');
+        if(backToResultsBtn) backToResultsBtn.onclick = () => showStep('results');
+
+        if(submitLeadBtn) submitLeadBtn.onclick = (e) => {
+            e.preventDefault();
+            const nameInput = el('#user-name');
+            const emailInput = el('#user-email');
+            if (nameInput.value && emailInput.value && emailInput.checkValidity()) {
+                handleCompletion({ name: nameInput.value, email: emailInput.value });
+                // Optionally show a thank you message
+                const formContainer = el('#lead-capture-step');
+                formContainer.innerHTML = `<h3 class="intro-title">Thank You!</h3><p class="intro-description">Your personalized guide is on its way to your inbox.</p>`;
+                el('#footer-buttons').innerHTML = `<button id="restart-btn" class="btn btn-primary">Start Over</button>`;
+                setupEventListeners(); // Re-attach listener for the new restart button
+            } else {
+                alert('Please enter a valid name and email address.');
+            }
+        };
+    }
+
+    // --- Initial Render ---
+    showStep('intro');
+
+    // --- Cleanup Function ---
+    return function cleanup() {
+      if (calculatingTimeout) {
+        clearTimeout(calculatingTimeout);
+      }
+    };
+  }
+};
