@@ -9074,11 +9074,11 @@ export const PropertyCalculatorExtension6 = {
 
 // YRS VERSION 1 - WINTER TOUR QUIZ:
 
-export const WinterExplorerQuizExtension = {
-  name: 'WinterExplorerQuiz',
+export const WinterExplorerQuizExtension1 = {
+  name: 'WinterExplorerQuiz1',
   type: 'response',
   match: ({ trace }) =>
-    trace.type === 'ext_winterExplorerQuiz' || trace.payload?.name === 'ext_winterExplorerQuiz',
+    trace.type === 'ext_winterExplorerQuiz1' || trace.payload?.name === 'ext_winterExplorerQuiz1',
   render: ({ trace, element }) => {
     // --- Configuration from Voiceflow Payload ---
     const {
