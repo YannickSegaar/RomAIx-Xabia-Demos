@@ -9072,9 +9072,7 @@ export const PropertyCalculatorExtension6 = {
   }
 };
 
-
-// YRS: WinterExplorerQuizExtension VERSION 1
-
+// YRS VERSION 1 - WINTER TOUR QUIZ:
 
 export const WinterExplorerQuizExtension = {
   name: 'WinterExplorerQuiz',
