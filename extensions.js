@@ -9857,7 +9857,7 @@ export const WinterExplorerQuizExtension1 = {
 // YRS VERSION 2 - WINTER TOUR QUIZ:
 
 export const WinterExplorerQuizExtension2 = {
-  name: 'WinterExplorerQuiz2',
+  name: 'WinterExplorerQuiz',
   type: 'response',
   match: ({ trace }) =>
     trace.type === 'ext_winterExplorerQuiz2' || trace.payload?.name === 'ext_winterExplorerQuiz2',
@@ -10224,7 +10224,7 @@ export const WinterExplorerQuizExtension2 = {
 
         .fun-fact-text {
             font-size: 15px;
-            color: ${textLight};
+            color: var(--text-light);
             line-height: 1.6;
         }
 
