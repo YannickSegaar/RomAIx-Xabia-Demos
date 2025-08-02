@@ -9071,3 +9071,786 @@ export const PropertyCalculatorExtension6 = {
     return function cleanup() {};
   }
 };
+
+
+// YRS: WinterExplorerQuizExtension VERSION 1
+
+export const WinterExplorerQuizExtension = {
+  name: 'WinterExplorerQuiz',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_winterExplorerQuiz' || trace.payload?.name === 'ext_winterExplorerQuiz',
+  render: ({ trace, element }) => {
+    // --- Configuration from Voiceflow Payload ---
+    const {
+      workflowTitle = 'Find Your Norwegian Winter Persona',
+      height = '700',
+      backgroundColor = '#FFFFFF',
+      maxWidth = '500px',
+      // --- Branding from Instructions ---
+      primaryColor = '#3B534E', // Forest Green
+      secondaryColor = '#6C92A6', // Arctic Blue
+      accentColor = '#F0F4F8', // Pristine White/Light Blue-Gray
+      highlightColor = '#587C74', // Muted Teal
+      // --- Border & Shadow ---
+      borderWidth = '1px',
+      borderColor = '#E0E7EF',
+      borderStyle = 'solid',
+      borderRadius = '16px',
+      shadowColor = 'rgba(108, 146, 166, 0.15)',
+      shadowSize = '12px',
+      animateIn = true,
+    } = trace.payload || {};
+
+    // --- Quiz Questions Data ---
+    // Each option has `points` that correspond to a persona:
+    // c: Conscious Explorer, u: Cultural Immersionist, n: Nature Photographer, a: Adventure Seeker
+    const questions = [
+      {
+        id: 'q1-activity',
+        title: 'Your perfect Norwegian winter day involves:',
+        description: 'What kind of activity energizes you the most in a winter wonderland?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1517264109451-423e4e942858?q=80&w=1974&auto=format&fit=crop',
+        options: [
+          { id: 'q1a', text: 'Quietly observing a frozen fjord', image: 'https://images.unsplash.com/photo-1613399708793-47514385a9a3?q=80&w=2070&auto=format&fit=crop', points: { n: 2, c: 1 } },
+          { id: 'q1b', text: 'Learning to ski with a local guide', image: 'https://images.unsplash.com/photo-1549972349-89467c459092?q=80&w=1964&auto=format&fit=crop', points: { u: 2, a: 1 } },
+          { id: 'q1c', text: 'Finding a dramatic landscape for a photo', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop', points: { n: 2, a: 1 } },
+          { id: 'q1d', text: 'Dog sledding across a snowy plateau', image: 'https://images.unsplash.com/photo-1557259273-350a95c55717?q=80&w=1949&auto=format&fit=crop', points: { a: 2, u: 1 } },
+        ]
+      },
+      {
+        id: 'q2-priority',
+        title: 'When you travel, you prioritize:',
+        description: 'What is the most important element of a truly memorable trip for you?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1542640244-1b693529d4b3?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q2a', text: 'Minimizing your carbon footprint', image: 'https://images.unsplash.com/photo-1611273735312-499a5b5a79ba?q=80&w=2070&auto=format&fit=crop', points: { c: 2 } },
+          { id: 'q2b', text: 'Authentic cultural interactions', image: 'https://images.unsplash.com/photo-1579523600589-de83a38a5a5d?q=80&w=1974&auto=format&fit=crop', points: { u: 2 } },
+          { id: 'q2c', text: 'Thrilling new experiences', image: 'https://images.unsplash.com/photo-1605648212948-895a0a259c04?q=80&w=2070&auto=format&fit=crop', points: { a: 2 } },
+          { id: 'q2d', text: 'Scenic beauty and tranquility', image: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070&auto=format&fit=crop', points: { n: 2 } },
+        ]
+      },
+      {
+        id: 'q3-sustainability',
+        title: 'Which sustainable practice resonates most?',
+        description: 'Your choices help protect the pristine beauty of Norway for future generations.',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1599394022839-a82a6133532b?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q3a', text: 'Supporting local, family-owned businesses', image: 'https://images.unsplash.com/photo-1524733988523-b691a15f02c1?q=80&w=1949&auto=format&fit=crop', points: { u: 2, c: 1 } },
+          { id: 'q3b', text: 'Choosing electric-powered transport', image: 'https://images.unsplash.com/photo-1629053093138-72b68f50ef75?q=80&w=2071&auto=format&fit=crop', points: { c: 2, a: 1 } },
+          { id: 'q3c', text: 'Following \'leave no trace\' principles', image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=2175&auto=format&fit=crop', points: { n: 2, c: 1 } },
+          { id: 'q3d', text: 'Learning about local conservation efforts', image: 'https://images.unsplash.com/photo-1579282240050-848595738a21?q=80&w=1974&auto=format&fit=crop', points: { c: 2, u: 1 } },
+        ]
+      },
+      {
+        id: 'q4-instinct',
+        title: 'You see a stunning view. Your first instinct is to:',
+        description: 'How do you capture and experience a perfect moment?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1505364812370-153d6a0954a6?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q4a', text: 'Soak in the moment, feeling the peace', image: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?q=80&w=1974&auto=format&fit=crop', points: { c: 1, n: 1 } },
+          { id: 'q4b', text: 'Frame the perfect photograph', image: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?q=80&w=1974&auto=format&fit=crop', points: { n: 2 } },
+          { id: 'q4c', text: 'Ask a local about the folklore of the place', image: 'https://images.unsplash.com/photo-1528422101344-78d67a1262b3?q=80&w=1974&auto=format&fit=crop', points: { u: 2 } },
+          { id: 'q4d', text: 'Find a hiking trail to the summit', image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=2070&auto=format&fit=crop', points: { a: 2 } },
+        ]
+      },
+      {
+        id: 'q5-evening',
+        title: 'Your ideal evening on a winter trip is:',
+        description: 'After a day of exploring, how do you like to unwind?',
+        multiSelect: false,
+        image: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=2070&auto=format&fit=crop',
+        options: [
+          { id: 'q5a', text: 'A fireside chat at a sustainable lodge', image: 'https://images.unsplash.com/photo-1549488344-cbb6c34cf08b?q=80&w=1974&auto=format&fit=crop', points: { c: 2, u: 1 } },
+          { id: 'q5b', text: 'Hunting for the Northern Lights', image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=2070&auto=format&fit=crop', points: { a: 2, n: 1 } },
+          { id: 'q5c', text: 'A traditional meal with local ingredients', image: 'https://images.unsplash.com/photo-1604329221061-aa139a03915c?q=80&w=2070&auto=format&fit=crop', points: { u: 2, c: 1 } },
+          { id: 'q5d', text: 'Reviewing the day\'s photos', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1964&auto=format&fit=crop', points: { n: 2 } },
+        ]
+      }
+    ];
+
+    // --- Persona Results Data ---
+    const personaResults = {
+      c: {
+        id: 'conscious-explorer',
+        name: 'The Conscious Explorer',
+        description: 'You travel with purpose, seeking to leave places better than you found them. Your journey is defined by responsible choices, deep respect for nature, and a desire to support sustainable practices. You find joy in low-impact adventures and meaningful connections.',
+        image: 'https://images.unsplash.com/photo-1629053093138-72b68f50ef75?q=80&w=2071&auto=format&fit=crop',
+        recommendation: {
+          name: 'Silent Fjord & Glacier Tour',
+          details: 'Experience the majesty of the fjords on a silent electric ship, followed by a guided hike on a breathtaking glacier. This tour is fully carbon-neutral.'
+        }
+      },
+      u: {
+        id: 'cultural-immersionist',
+        name: 'The Cultural Immersionist',
+        description: 'You believe travel is about understanding the heart of a place through its people, traditions, and stories. You seek authentic experiences, from local cuisine to ancient folklore, and value the connections you make along the way.',
+        image: 'https://images.unsplash.com/photo-1533109721025-d1ae7de8488a?q=80&w=1974&auto=format&fit=crop',
+        recommendation: {
+          name: 'Heritage Trail & Local Flavors',
+          details: 'Journey on the historic Flåm Railway, visit a traditional Stave Church, and end your day with a meal prepared by local chefs using regional ingredients.'
+        }
+      },
+      n: {
+        id: 'nature-photographer',
+        name: 'The Nature Photographer',
+        description: 'You see the world through a creative lens, always searching for the perfect light and composition. Your goal is to capture the raw, untouched beauty of the landscape, preserving its fleeting moments in stunning photographs.',
+        image: 'https://images.unsplash.com/photo-1547756536-cdeaf2a2fa8c?q=80&w=2070&auto=format&fit=crop',
+        recommendation: {
+          name: 'Arctic Light & Landscape Safari',
+          details: 'A tour designed for photographers, taking you to iconic viewpoints like the Stegastein and remote valleys at the golden hour to capture the perfect winter shot.'
+        }
+      },
+      a: {
+        id: 'adventure-seeker',
+        name: 'The Adventure Seeker',
+        description: 'For you, travel is about pushing boundaries and feeling the thrill of the wild. You crave action-packed days and unforgettable experiences, from speeding across snowy landscapes to exploring the most remote corners of the Arctic.',
+        image: 'https://images.unsplash.com/photo-1502680390469-27c2386b2b85?q=80&w=2070&auto=format&fit=crop',
+        recommendation: {
+          name: 'Fjord Adrenaline Package',
+          details: 'Combine a high-speed RIB boat safari on the fjord with an exhilarating snowshoe hike to a stunning viewpoint. This package is for those who want to do it all.'
+        }
+      }
+    };
+
+    // --- State Variables ---
+    let currentStep = 'intro';
+    let answers = {};
+    let calculatingTimeout = null;
+    window.currentQuestionIndex = 1; // Use window to persist across re-renders
+
+    // --- Initial Setup ---
+    element.innerHTML = '';
+    const container = document.createElement('div');
+    container.style.cssText = 'width: 100%; display: flex; justify-content: center; align-items: flex-start; background-color: transparent; margin: 0; padding: 10px 0;';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'winter-quiz-wrapper';
+    wrapper.style.cssText = `
+      width: ${maxWidth}; min-width: ${maxWidth}; max-width: ${maxWidth};
+      border: ${borderWidth} ${borderStyle} ${borderColor}; border-radius: ${borderRadius};
+      overflow: hidden; background-color: ${backgroundColor};
+      box-shadow: 0 4px ${shadowSize} ${shadowColor}; height: ${height}px;
+      display: flex; flex-direction: column; margin: 0 auto; position: relative;
+    `;
+    
+    if (animateIn) {
+      wrapper.style.opacity = '0';
+      wrapper.style.transform = 'translateY(20px)';
+      wrapper.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    }
+
+    // --- HTML & CSS for the entire quiz ---
+    wrapper.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&display=swap');
+        
+        .winter-quiz-wrapper * {
+          box-sizing: border-box;
+          font-family: 'Nunito Sans', sans-serif;
+        }
+        
+        .workflow-header {
+          background: ${primaryColor};
+          color: white;
+          padding: 18px 20px;
+          text-align: center;
+          font-weight: 700;
+        }
+        
+        .workflow-header h2 {
+          margin: 0;
+          font-size: 19px;
+          letter-spacing: 0.5px;
+        }
+        
+        .workflow-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 30px 25px 90px 25px;
+          position: relative;
+        }
+        
+        .workflow-step {
+          display: none;
+          animation: fadeIn 0.4s ease-in-out;
+        }
+        
+        .workflow-step.active {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- Progress Indicator --- */
+        .progress-indicator {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          margin-bottom: 25px;
+        }
+        
+        .progress-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: ${borderColor};
+          transition: all 0.3s ease;
+        }
+        
+        .progress-dot.active {
+          background-color: ${secondaryColor};
+          transform: scale(1.3);
+        }
+
+        .progress-dot.completed {
+          background-color: ${primaryColor};
+        }
+        
+        /* --- Intro Step --- */
+        .intro-image {
+          width: 100%;
+          height: 220px;
+          object-fit: cover;
+          border-radius: ${borderRadius};
+          margin-bottom: 25px;
+        }
+        
+        .intro-title, .question-title, .results-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: ${primaryColor};
+          margin-bottom: 15px;
+          text-align: center;
+        }
+        
+        .intro-description, .question-description {
+          font-size: 16px;
+          color: #555;
+          line-height: 1.6;
+          margin-bottom: 25px;
+          text-align: center;
+        }
+        
+        /* --- Question Step --- */
+        .question-image {
+          width: 100%;
+          height: 180px;
+          object-fit: cover;
+          border-radius: 12px;
+          margin-bottom: 20px;
+        }
+        
+        .options-container {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        
+        .option {
+          display: flex;
+          align-items: center;
+          border: 2px solid ${borderColor};
+          border-radius: 12px;
+          padding: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          background-color: white;
+        }
+        
+        .option:hover {
+          border-color: ${secondaryColor};
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px ${shadowColor};
+        }
+        
+        .option.selected {
+          border-color: ${primaryColor};
+          background-color: ${accentColor};
+        }
+        
+        .option-image {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-right: 15px;
+        }
+        
+        .option-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          flex: 1;
+        }
+        
+        .option-check {
+          width: 24px;
+          height: 24px;
+          border: 2px solid ${borderColor};
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .option.selected .option-check {
+          background-color: ${primaryColor};
+          border-color: ${primaryColor};
+        }
+
+        .option-check svg {
+            display: none;
+        }
+
+        .option.selected .option-check svg {
+            display: block;
+        }
+        
+        /* --- Calculating Step --- */
+        .calculating-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          text-align: center;
+        }
+        
+        .calculating-container .spinner {
+          width: 60px;
+          height: 60px;
+          border: 5px solid ${secondaryColor}50;
+          border-top-color: ${secondaryColor};
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        /* --- Results Step --- */
+        .results-card {
+          background-color: ${accentColor};
+          border-radius: ${borderRadius};
+          padding: 25px;
+          text-align: center;
+          border: 1px solid ${borderColor};
+        }
+
+        .persona-image {
+          width: 150px;
+          height: 150px;
+          object-fit: cover;
+          border-radius: 50%;
+          margin: 0 auto 20px auto;
+          border: 4px solid white;
+          box-shadow: 0 5px 15px ${shadowColor};
+        }
+
+        .persona-name {
+          font-size: 26px;
+          font-weight: 700;
+          color: ${primaryColor};
+          margin: 0 0 10px 0;
+        }
+
+        .persona-description {
+          font-size: 15px;
+          color: #444;
+          line-height: 1.6;
+          margin-bottom: 25px;
+        }
+
+        .recommendation-box {
+          background-color: white;
+          border: 2px dashed ${secondaryColor};
+          padding: 20px;
+          border-radius: 12px;
+          margin-top: 20px;
+        }
+
+        .recommendation-title {
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: ${secondaryColor};
+          margin: 0 0 10px 0;
+        }
+
+        .recommendation-name {
+          font-size: 18px;
+          font-weight: 700;
+          color: ${primaryColor};
+          margin: 0 0 8px 0;
+        }
+
+        .recommendation-details {
+          font-size: 15px;
+          color: #555;
+          line-height: 1.5;
+        }
+        
+        /* --- Bottom Buttons --- */
+        .btn-container {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: space-between;
+          gap: 15px;
+          padding: 20px 25px;
+          background-color: ${backgroundColor};
+          border-top: 1px solid ${borderColor};
+          z-index: 10;
+        }
+        
+        .btn {
+          padding: 14px 20px;
+          border-radius: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          font-size: 16px;
+          transition: all 0.2s ease;
+          flex-grow: 1;
+          text-align: center;
+        }
+        
+        .btn-primary {
+          background-color: ${primaryColor};
+          color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+          background-color: ${highlightColor};
+          transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+          background-color: #B0BEC5;
+          cursor: not-allowed;
+          opacity: 0.8;
+        }
+        
+        .btn-secondary {
+          background-color: ${accentColor};
+          color: ${primaryColor};
+          border: 1px solid ${borderColor};
+        }
+        
+        .btn-secondary:hover {
+          background-color: #E8EEF3;
+          transform: translateY(-2px);
+        }
+      </style>
+
+      <div class="workflow-header">
+        <h2 id="header-title">${workflowTitle}</h2>
+      </div>
+
+      <div class="workflow-content">
+        <!-- Intro Step -->
+        <div id="intro-step" class="workflow-step active">
+          <img class="intro-image" src="https://images.unsplash.com/photo-1548786811-dd6e453ccca7?q=80&w=1974&auto=format&fit=crop" alt="Norwegian Fjord in Winter">
+          <h3 class="intro-title">Discover Your Inner Explorer</h3>
+          <p class="intro-description">Answer 5 questions to reveal your unique Norwegian winter travel style and get a personalized tour recommendation that respects nature and local culture.</p>
+        </div>
+        
+        <!-- Question Step -->
+        <div id="question-step" class="workflow-step">
+          <div id="progress-indicator" class="progress-indicator"></div>
+          <div id="question-content">
+            <!-- Question will be inserted here -->
+          </div>
+        </div>
+        
+        <!-- Calculating Step -->
+        <div id="calculating-step" class="workflow-step">
+          <div class="calculating-container">
+            <div class="spinner"></div>
+            <h3 class="results-title">Analyzing Your Travel Style...</h3>
+            <p class="intro-description">We're matching your preferences with our sustainable adventures.</p>
+          </div>
+        </div>
+        
+        <!-- Results Step -->
+        <div id="results-step" class="workflow-step">
+          <div id="results-content">
+             <!-- Results will be rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-container" id="footer-buttons">
+        <!-- Buttons will be rendered here -->
+      </div>
+    `;
+
+    // --- Append to DOM ---
+    container.appendChild(wrapper);
+    element.appendChild(container);
+
+    if (animateIn) {
+      setTimeout(() => {
+        wrapper.style.opacity = '1';
+        wrapper.style.transform = 'translateY(0)';
+      }, 100);
+    }
+
+    // --- Core Functions ---
+    function showStep(stepId) {
+      const steps = wrapper.querySelectorAll('.workflow-step');
+      steps.forEach(step => step.classList.remove('active'));
+      
+      const targetStep = wrapper.querySelector(`#${stepId}-step`);
+      if (targetStep) {
+        targetStep.classList.add('active');
+        currentStep = stepId;
+        renderFooterButtons();
+        
+        if (stepId === 'question') renderCurrentQuestion();
+        if (stepId === 'results') renderResults();
+      }
+    }
+
+    function renderFooterButtons() {
+        const footer = wrapper.querySelector('#footer-buttons');
+        let buttonsHTML = '';
+
+        switch(currentStep) {
+            case 'intro':
+                buttonsHTML = `<button id="start-btn" class="btn btn-primary">Start Quiz</button>`;
+                break;
+            case 'question':
+                buttonsHTML = `
+                    <button id="back-btn" class="btn btn-secondary">Back</button>
+                    <button id="next-btn" class="btn btn-primary" disabled>Next</button>
+                `;
+                break;
+            case 'results':
+                 buttonsHTML = `
+                    <button id="restart-btn" class="btn btn-secondary">Restart Quiz</button>
+                    <button id="complete-btn" class="btn btn-primary">Complete</button>
+                `;
+                break;
+            default:
+                buttonsHTML = '';
+                break;
+        }
+        footer.innerHTML = buttonsHTML;
+        setupEventListeners(); // Re-attach listeners after re-rendering buttons
+    }
+    
+    function renderProgressIndicator() {
+      const container = wrapper.querySelector('#progress-indicator');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      const totalSteps = questions.length;
+      
+      for (let i = 1; i <= totalSteps; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'progress-dot';
+        if (i < window.currentQuestionIndex) dot.classList.add('completed');
+        if (i === window.currentQuestionIndex) dot.classList.add('active');
+        container.appendChild(dot);
+      }
+    }
+
+    function renderCurrentQuestion() {
+      const index = window.currentQuestionIndex - 1;
+      const question = questions[index];
+      if (!question) return;
+      
+      renderProgressIndicator();
+      
+      const content = wrapper.querySelector('#question-content');
+      content.innerHTML = `
+        <h3 class="question-title">${question.title}</h3>
+        <p class="question-description">${question.description}</p>
+        <div class="options-container" id="question-options">
+          ${question.options.map(option => `
+            <div class="option" data-option-id="${option.id}">
+              <img class="option-image" src="${option.image}" alt="${option.text}" onerror="this.style.display='none'">
+              <div class="option-text">${option.text}</div>
+              <div class="option-check">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      // Add event listeners AFTER rendering the options
+      const options = wrapper.querySelectorAll('.option');
+      options.forEach(option => {
+          option.onclick = () => {
+              handleOptionClick(question, option.dataset.optionId);
+          };
+      });
+
+      updateSelectedOptions();
+      updateNextButtonState();
+    }
+    
+    function handleOptionClick(question, optionId) {
+      answers[question.id] = optionId;
+      updateSelectedOptions();
+      updateNextButtonState();
+    }
+    
+    function updateSelectedOptions() {
+      const question = questions[window.currentQuestionIndex - 1];
+      if (!question) return;
+      
+      const options = wrapper.querySelectorAll('#question-options .option');
+      options.forEach(option => {
+        const optionId = option.dataset.optionId;
+        option.classList.toggle('selected', answers[question.id] === optionId);
+      });
+    }
+    
+    function updateNextButtonState() {
+      const nextBtn = wrapper.querySelector('#next-btn');
+      if (!nextBtn) return;
+      
+      const question = questions[window.currentQuestionIndex - 1];
+      nextBtn.disabled = !answers[question.id];
+      
+      if (window.currentQuestionIndex === questions.length) {
+        nextBtn.textContent = 'See Results';
+      } else {
+        nextBtn.textContent = 'Next';
+      }
+    }
+    
+    function calculateResults() {
+      const scores = { c: 0, u: 0, n: 0, a: 0 };
+
+      questions.forEach(question => {
+        const selectedOptionId = answers[question.id];
+        if (selectedOptionId) {
+          const selectedOption = question.options.find(opt => opt.id === selectedOptionId);
+          if (selectedOption && selectedOption.points) {
+            for (const persona in selectedOption.points) {
+              scores[persona] += selectedOption.points[persona];
+            }
+          }
+        }
+      });
+      
+      let topPersona = 'c';
+      let maxScore = 0;
+      for (const persona in scores) {
+        if (scores[persona] > maxScore) {
+          maxScore = scores[persona];
+          topPersona = persona;
+        }
+      }
+      
+      return personaResults[topPersona];
+    }
+    
+    function renderResults() {
+      const result = calculateResults();
+      const content = wrapper.querySelector('#results-content');
+      content.innerHTML = `
+        <div class="results-card">
+            <img class="persona-image" src="${result.image}" alt="${result.name}" onerror="this.style.display='none'">
+            <h3 class="persona-name">${result.name}</h3>
+            <p class="persona-description">${result.description}</p>
+            <div class="recommendation-box">
+                <p class="recommendation-title">Your Recommended Adventure</p>
+                <h4 class="recommendation-name">${result.recommendation.name}</h4>
+                <p class="recommendation-details">${result.recommendation.details}</p>
+            </div>
+        </div>
+      `;
+    }
+    
+    function handleCompletion() {
+      const finalPersona = calculateResults();
+      if (window.voiceflow?.chat) {
+        window.voiceflow.chat.interact({
+          type: 'request',
+          payload: {
+            type: 'winter-quiz-complete',
+            data: {
+              persona: finalPersona.name,
+              recommendedTour: finalPersona.recommendation.name,
+              answers: answers
+            }
+          }
+        });
+      } else {
+        // Fallback for testing outside Voiceflow
+        alert(`Quiz Complete! Your persona is: ${finalPersona.name}`);
+      }
+    }
+
+    function setupEventListeners() {
+        const el = (selector) => wrapper.querySelector(selector);
+
+        const startBtn = el('#start-btn');
+        const nextBtn = el('#next-btn');
+        const backBtn = el('#back-btn');
+        const restartBtn = el('#restart-btn');
+        const completeBtn = el('#complete-btn');
+        
+        if(startBtn) startBtn.onclick = () => showStep('question');
+        
+        if(nextBtn) nextBtn.onclick = () => {
+            if (window.currentQuestionIndex < questions.length) {
+                window.currentQuestionIndex++;
+                showStep('question');
+            } else {
+                showStep('calculating');
+                calculatingTimeout = setTimeout(() => showStep('results'), 2500);
+            }
+        };
+
+        if(backBtn) backBtn.onclick = () => {
+            if (window.currentQuestionIndex > 1) {
+                window.currentQuestionIndex--;
+                showStep('question');
+            } else {
+                showStep('intro');
+            }
+        };
+
+        if(restartBtn) restartBtn.onclick = () => {
+            answers = {};
+            window.currentQuestionIndex = 1;
+            showStep('intro');
+        };
+
+        if(completeBtn) completeBtn.onclick = handleCompletion;
+    }
+
+    // --- Initial Render ---
+    showStep('intro');
+
+    // --- Cleanup Function ---
+    return function cleanup() {
+      if (calculatingTimeout) {
+        clearTimeout(calculatingTimeout);
+      }
+    };
+  }
+};
+
