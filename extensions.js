@@ -9075,6 +9075,7 @@ export const PropertyCalculatorExtension6 = {
 
 // YRS: WinterExplorerQuizExtension VERSION 1
 
+
 export const WinterExplorerQuizExtension = {
   name: 'WinterExplorerQuiz',
   type: 'response',
@@ -9853,4 +9854,3 @@ export const WinterExplorerQuizExtension = {
     };
   }
 };
-
