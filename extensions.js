@@ -10000,7 +10000,7 @@ export const WinterExplorerQuizExtension2 = {
     let currentStep = 'intro';
     let answers = {};
     let calculatingTimeout = null;
-    window.currentQuestionIndex = 1; // Use window to persist across re-renders
+    let currentQuestionIndex = 1;
 
     // --- Initial Setup ---
     element.innerHTML = '';
@@ -10224,7 +10224,7 @@ export const WinterExplorerQuizExtension2 = {
 
         .fun-fact-text {
             font-size: 15px;
-            color: var(--text-light);
+            color: #576574;
             line-height: 1.6;
         }
 
@@ -10477,14 +10477,14 @@ export const WinterExplorerQuizExtension2 = {
       for (let i = 1; i <= totalSteps; i++) {
         const dot = document.createElement('div');
         dot.className = 'progress-dot';
-        if (i < window.currentQuestionIndex) dot.classList.add('completed');
-        if (i === window.currentQuestionIndex) dot.classList.add('active');
+        if (i < currentQuestionIndex) dot.classList.add('completed');
+        if (i === currentQuestionIndex) dot.classList.add('active');
         container.appendChild(dot);
       }
     }
 
     function renderCurrentQuestion() {
-      const index = window.currentQuestionIndex - 1;
+      const index = currentQuestionIndex - 1;
       const question = questions[index];
       if (!question) return;
       
@@ -10545,7 +10545,7 @@ export const WinterExplorerQuizExtension2 = {
     }
     
     function updateSelectedOptions() {
-      const question = questions[window.currentQuestionIndex - 1];
+      const question = questions[currentQuestionIndex - 1];
       if (!question) return;
       
       const options = wrapper.querySelectorAll('#question-options .option');
@@ -10559,10 +10559,10 @@ export const WinterExplorerQuizExtension2 = {
       const nextBtn = wrapper.querySelector('#next-btn');
       if (!nextBtn) return;
       
-      const question = questions[window.currentQuestionIndex - 1];
+      const question = questions[currentQuestionIndex - 1];
       nextBtn.disabled = !answers[question.id];
       
-      if (window.currentQuestionIndex === questions.length) {
+      if (currentQuestionIndex === questions.length) {
         nextBtn.textContent = 'See Results';
       } else {
         nextBtn.textContent = 'Next';
@@ -10645,8 +10645,8 @@ export const WinterExplorerQuizExtension2 = {
         if(startBtn) startBtn.onclick = () => showStep('question');
         
         if(nextBtn) nextBtn.onclick = () => {
-            if (window.currentQuestionIndex < questions.length) {
-                window.currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                currentQuestionIndex++;
                 showStep('question');
             } else {
                 showStep('calculating');
@@ -10655,8 +10655,8 @@ export const WinterExplorerQuizExtension2 = {
         };
 
         if(backBtn) backBtn.onclick = () => {
-            if (window.currentQuestionIndex > 1) {
-                window.currentQuestionIndex--;
+            if (currentQuestionIndex > 1) {
+                currentQuestionIndex--;
                 showStep('question');
             } else {
                 showStep('intro');
@@ -10665,7 +10665,7 @@ export const WinterExplorerQuizExtension2 = {
 
         if(restartBtn) restartBtn.onclick = () => {
             answers = {};
-            window.currentQuestionIndex = 1;
+            currentQuestionIndex = 1;
             showStep('intro');
         };
 
@@ -10682,4 +10682,4 @@ export const WinterExplorerQuizExtension2 = {
       }
     };
   }
-};
+}
